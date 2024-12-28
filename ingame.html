@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleic Evolution - In Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .flex-grow {
+            flex-grow: 1;
+        }
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            height: 70%;
+            width: 80%;
+            margin-top: 10px;
+            margin-bottom: 40px;
+            overflow: visible;
+            position: relative;
+        }
+        .zone {
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            background-color: #374151;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+        .zone.highlight {
+            border-color: yellow;
+        }
+        .user-zone {
+            grid-row: 2;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 25%;
+            overflow: visible;
+            position: relative;
+        }
+        .card {
+            width: 150px;
+            height: 204px;
+            background-size: cover;
+            margin: 5px;
+            position: absolute;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .hidden {
+            display: none;
+        }
+        .reveal-cards {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 30;
+        }
+        .reveal-card {
+            width: 150px;
+            height: 204px;
+            background-size: cover;
+            cursor: pointer;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, margin 0.2s ease, top 0.2s ease;
+            z-index: 30;
+        }
+        .reveal-card:hover {
+            transform: scale(1.4);
+            z-index: 40;
+        }
+        .placed-card {
+            width: 82.5px;
+            height: 112.5px;
+            background-size: cover;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, z-index 0.2s ease;
+            position: relative;
+            z-index: 15;
+        }
+        .placed-card:hover {
+            transform: scale(2.5);
+            z-index: 20;
+        }
+        .placed-card.big-card {
+            width: 150px;
+            height: 204px;
+            z-index: 25;
+        }
+        .placed-card.big-card:hover {
+            transform: scale(1.5)
+        }
+        .opponent-zone .placed-card:hover {
+            z-index: 50;
+        }
+        .glow {
+            box-shadow: 0 0 20px yellow;
+        }
+        .popup-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 50;
+            display: none;
+        }
+        .turn-indicator-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 200px;
+            height: 50px;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .aura-yellow {
+            box-shadow: 0 0 20px 5px yellow;
+        }
+        .aura-light-blue {
+            box-shadow: 0 0 20px 5px lightblue;
+        }
+        .aura-light-purple {
+            box-shadow: 0 0 20px 5px #c084fc;
+        }
+        .aura-light-red {
+            box-shadow: 0 0 20px 5px #f87171;
+        }
+        .aura-light-green {
+            box-shadow: 0 0 20px 5px #34d399;
+        }
+        .aura-light-orange {
+            box-shadow: 0 0 20px 5px #fbbf24;
+        }
+        .aura-black {
+            box-shadow: 0 0 20px 5px black;
+        }
+        .aura-light-pink {
+            box-shadow: 0 0 20px 5px #f355b0; /* Light orange glow */
+        }
+        .aura-light-turquoise {
+            box-shadow: 0 0 20px 5px #5ff3e1; /* Light orange glow */
+        }
+        .aura-light-brown {
+            box-shadow: 0 0 20px 5px #C4A484; /* Light orange glow */
+        }
+
+        .resource-circle, .combat-circle {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid black; /* Added black border */
+            pointer-events: none; /* Prevent hover effects on circles */
+            z-index: 30;
+        }
+
+        .resource-circle {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #40E0B5;
+        }
+
+        .combat-circle {
+            top: -10px;
+            right: -10px;
+            background-color: #CD5C5C;
+        }
+
+        .placed-card:hover .resource-circle, .placed-card:hover .combat-circle {
+            display: none;
+        }
+
+        .button-custom {
+            background-color: #fbbf24;
+            color: black;
+            border: 2px solid black;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .button-custom:hover {
+            background-color: black;
+            color: #fbbf24;
+        }
+
+        .ai-choices-preview .ai-choice-card {
+            transition: none !important;
+        }
+
+        .resource-display {
+            position: absolute;
+            top: 45%;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            background-color: black;
+        }
+
+        #user-resource-display {
+            left: 20px;
+        }
+
+        #ai-resource-display {
+            right: 20px;
+        }
+
+
+        .button-disabled {
+            cursor: not-allowed;
+        }
+
+        .disabled {
+            cursor: default; /* Change cursor to default to indicate no interaction */
+        }
+
+        .no-pointer-events {
+            pointer-events: none; /* Disable clicking and dragging */
+        }
+
+
+
+
+    </style>
+</head>
+
+<body>
+
+<!-- Main Content -->
+<div id="turn-indicator-container" class="turn-indicator-box aura-yellow">Your Turn</div>
+<div class="flex-grow game-area">
+    <div class="zone opponent-zone" id="opponent-zone-1">
+        <div class="row" data-type="land"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="unit"></div>
+    </div>
+    <div class="zone opponent-zone" id="opponent-zone-2">
+        <div class="row" data-type="land"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="unit"></div>
+    </div>
+    <div class="zone opponent-zone" id="opponent-zone-3">
+        <div class="row" data-type="land"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="unit"></div>
+    </div>
+    <div class="zone user-zone" id="user-zone-1">
+        <div class="row" data-type="unit"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="land"></div>
+    </div>
+    <div class="zone user-zone" id="user-zone-2">
+        <div class="row" data-type="unit"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="land"></div>
+    </div>
+    <div class="zone user-zone" id="user-zone-3">
+        <div class="row" data-type="unit"></div>
+        <div class="row" data-type="power-up"></div>
+        <div class="row" data-type="land"></div>
+    </div>
+</div>
+
+<!-- Revealed Cards -->
+<div class="reveal-cards" id="reveal-cards"></div>
+
+<!-- Popup Message -->
+<div class="popup-message" id="popup-message">Does Nothing</div>
+
+<script src="ingame.js">
+</script>
+<audio autoplay loop id="background-music">
+    <source src="Nucleic_piano.mp3">
+</audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const backgroundMusic = document.getElementById('background-music');
+        backgroundMusic.volume = 0.1;
+
+        // Function to fade out the audio
+        function fadeOutAudio() {
+            const fadeInterval = setInterval(() => {
+                if (backgroundMusic.volume > 0.01) {
+                    backgroundMusic.volume -= 0.01; // Reduce volume gradually
+                } else {
+                    clearInterval(fadeInterval);
+                    backgroundMusic.pause(); // Stop the audio completely
+                }
+            }, 50); // Adjust the time interval for smoother or faster fade-out
+        }
+
+        // Event listener for when the user is about to leave the page
+        window.addEventListener('beforeunload', (event) => {
+            fadeOutAudio();
+
+            // Ensuring the fade-out completes before the page unloads
+            event.returnValue = ''; // This triggers the confirmation dialog in some browsers
+        });
+    });
+</script>
+</body>
+</html>

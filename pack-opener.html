@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Pack Opener</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .card {
+      width: 120px;
+      height: 160px;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.1);
+    }
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .button-custom {
+      background-color: #fbbf24; /* Light yellow */
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .button-custom:disabled {
+      background-color: gray;
+      color: lightgray;
+      border-color: gray;
+      cursor: not-allowed;
+    }
+    #saved-cards {
+      margin: 20px;
+      padding: 20px;
+      border: 2px solid black;
+      border-radius: 10px;
+      background-color: #2d3748;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 180px; /* Slightly larger than a single card image */
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .spacer {
+      flex-grow: 1;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+    h2 {
+      color: white; /* Ensure headers are white for contrast */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Pack Opener Section -->
+  <section class="container mx-auto px-6 py-8">
+    <div class="section-header">
+      <h2 class="text-2xl font-bold">Card Pack Opener</h2>
+      <div></div> <!-- Empty div to align with the right side -->
+    </div>
+    <div class="mt-6 button-container">
+      <button id="open-pack" class="button-custom">Open Pack</button>
+      <button id="reveal-all" class="button-custom ml-4">Reveal All</button>
+    </div>
+    <div id="opened-cards" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-2"></div>
+    <div class="mt-6 button-container">
+      <button id="save-cards" class="button-custom bg-gray-500" disabled>Save Cards</button>
+      <button id="clear-saved-cards" class="button-custom ml-4">Clear Saved Cards</button>
+    </div>
+  </section>
+
+  <!-- Saved Cards Section -->
+  <section class="container mx-auto px-6 py-8">
+    <div class="section-header">
+      <h2 class="text-2xl font-bold">Saved Cards</h2>
+    </div>
+    <div id="saved-cards" class="mt-6 mb-8 p-4 border border-black rounded-lg"></div>
+  </section>
+
+  <div class="button-container">
+    <button id="create-deck" class="button-custom">Create Deck</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="cards.js"></script>
+<script src="pack-opener.js"></script>
+
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+
+              const currentUser = localStorage.getItem('currentUser');
+              const createDeckButton = document.getElementById('create-deck');
+              if (!currentUser) {
+                createDeckButton.disabled = true;
+                createDeckButton.classList.add('cursor-not-allowed');
+                createDeckButton.title = 'Please login or create an account';
+              } else {
+                createDeckButton.disabled = false;
+                createDeckButton.classList.remove('cursor-not-allowed');
+                createDeckButton.title = '';
+              }
+            });
+  });
+</script>
+</body>
+</html>

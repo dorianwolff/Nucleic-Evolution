@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .form-section {
+      background-color: #374151; /* Lighter dark background for contrast */
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .form-section input {
+      background-color: #4a5568;
+      color: white;
+      border: none;
+      margin-bottom: 10px;
+    }
+    .button-custom {
+      background-color: #fbbf24; /* Light yellow */
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Profile Section -->
+  <section class="container mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold mb-6">Profile</h2>
+
+    <div id="profile-section" class="hidden">
+      <p>Welcome, <span id="username-display"></span>!</p>
+      <button id="logout-button" class="button-custom mt-4">Logout</button>
+    </div>
+
+    <div id="signup-section" class="form-section">
+      <h3 class="text-xl font-bold mb-4">Sign Up</h3>
+      <input type="text" id="signup-username" placeholder="Username" class="w-full p-2 rounded-md">
+      <input type="email" id="signup-email" placeholder="Email" class="w-full p-2 rounded-md">
+      <input type="password" id="signup-password" placeholder="Password" class="w-full p-2 rounded-md">
+      <button id="signup-button" class="button-custom mt-4">Sign Up</button>
+    </div>
+
+    <div id="signin-section" class="form-section">
+      <h3 class="text-xl font-bold mb-4">Sign In</h3>
+      <input type="text" id="signin-username" placeholder="Username" class="w-full p-2 rounded-md">
+      <input type="password" id="signin-password" placeholder="Password" class="w-full p-2 rounded-md">
+      <button id="signin-button" class="button-custom mt-4">Sign In</button>
+    </div>
+
+    <div id="decks-section" class="hidden">
+      <h3 class="text-xl font-bold mt-6">Your Decks</h3>
+      <div id="decks-container" class="mt-4">
+        <!-- User's decks will be displayed here -->
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  function saveUserData(username, data) {
+    localStorage.setItem('user-' + username, JSON.stringify(data));
+  }
+
+  function getUserData(username) {
+    return JSON.parse(localStorage.getItem('user-' + username));
+  }
+
+  function displayProfile(username) {
+    document.getElementById('username-display').innerText = username;
+    document.getElementById('profile-section').classList.remove('hidden');
+    document.getElementById('signup-section').classList.add('hidden');
+    document.getElementById('signin-section').classList.add('hidden');
+    document.getElementById('decks-section').classList.remove('hidden');
+    loadUserDecks(username);
+  }
+
+  function loadUserDecks(username) {
+    const userData = getUserData(username);
+    const decksContainer = document.getElementById('decks-container');
+    decksContainer.innerHTML = '';
+    if (userData && userData.decks) {
+      userData.decks.forEach(deck => {
+        const deckElement = document.createElement('div');
+        deckElement.classList.add('deck', 'p-4', 'mb-4', 'bg-gray-700', 'rounded-lg');
+        deckElement.innerText = deck.name;
+        decksContainer.appendChild(deckElement);
+      });
+    }
+  }
+
+  function validateEmail(email) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  }
+
+  function validatePassword(password) {
+    const passwordPattern = /^(?=.*[0-9!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
+    return passwordPattern.test(password);
+  }
+
+  document.getElementById('signup-button').addEventListener('click', () => {
+    const username = document.getElementById('signup-username').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
+
+    if (!username || !email || !password) {
+      alert('Please fill out all fields.');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      alert('Password must be at least 6 characters long and include a number or special character.');
+      return;
+    }
+
+    let userData = getUserData(username);
+    if (userData) {
+      alert('Username already exists.');
+    } else {
+      userData = { email, password, decks: [] };
+      saveUserData(username, userData);
+      alert('Sign up successful. Please sign in.');
+    }
+  });
+
+  document.getElementById('signin-button').addEventListener('click', () => {
+    const username = document.getElementById('signin-username').value.trim();
+    const password = document.getElementById('signin-password').value.trim();
+    if (username && password) {
+      const userData = getUserData(username);
+      if (userData && userData.password === password) {
+        localStorage.setItem('currentUser', username);
+        displayProfile(username);
+      } else {
+        alert('Invalid username or password.');
+      }
+    } else {
+      alert('Please enter a valid username and password.');
+    }
+  });
+
+  document.getElementById('logout-button').addEventListener('click', () => {
+    localStorage.removeItem('currentUser');
+    document.getElementById('profile-section').classList.add('hidden');
+    document.getElementById('signup-section').classList.remove('hidden');
+    document.getElementById('signin-section').classList.remove('hidden');
+    document.getElementById('decks-section').classList.add('hidden');
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      displayProfile(currentUser);
+    }
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+</script>
+</body>
+</html>

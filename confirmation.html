@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Payment Confirmation</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    .button-custom {
+      background-color: #fbbf24;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Confirmation Section -->
+  <section class="container mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold mb-6">Payment Confirmation</h2>
+    <p class="text-lg mb-6">Thank you for your purchase! Your payment has been processed successfully.</p>
+    <a href="shop.html" class="button-custom">Continue Shopping</a>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+</script>
+</body>
+</html>

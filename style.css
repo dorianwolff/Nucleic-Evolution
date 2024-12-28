@@ -1,0 +1,200 @@
+.banner{
+    width: 100%;
+    height: 100vh;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+}
+.banner .slider{
+    position: absolute;
+    width: 180px;
+    height: 250px;
+    top: 18%;
+    left: calc(50% - 100px);
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    animation: autoRun 35s linear infinite;
+    z-index: 2;
+}
+@keyframes autoRun{
+    from{
+        transform: perspective(1000px) rotateX(-16deg) rotateY(0deg);
+    }to{
+         transform: perspective(1000px) rotateX(-16deg) rotateY(360deg);
+     }
+}
+
+.banner .slider .item{
+    position: absolute;
+    inset: 0 0 0 0;
+    transform: rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg)) translateZ(550px);
+}
+.banner .slider .item img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.banner .content{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1400px, 100vw);
+    height: max-content;
+    bottom: 42%;
+    padding-left: 18%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+}
+.banner .content h1{
+    font-size: 8em;
+    line-height: 1em;
+    color: #40E0B5;
+    position: relative;
+}
+.banner .content h1::after{
+    position: absolute;
+    inset: 0 0 0 0;
+    content: attr(data-content);
+    z-index: 2;
+    -webkit-text-stroke: 2px #d2d2d2;
+    color: transparent;
+}
+.banner .content h2{
+    font-size: 3em;
+}
+@media screen and (max-width: 1023px) {
+    .banner .slider{
+        width: 160px;
+        height: 200px;
+        left: calc(50% - 80px);
+    }
+    .banner .slider .item{
+        transform:
+                rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
+                translateZ(300px);
+    }
+    .banner .content h1{
+        text-align: center;
+        width: 100%;
+        text-shadow: 0 10px 20px #000;
+        font-size: 7em;
+    }
+}
+@media screen and (max-width: 767px) {
+    .banner .slider{
+        width: 100px;
+        height: 150px;
+        left: calc(50% - 50px);
+    }
+    .banner .slider .item{
+        transform:
+                rotateY(calc( (var(--position) - 1) * (360 / var(--quantity)) * 1deg))
+                translateZ(180px);
+    }
+    .banner .content h1{
+        font-size: 3em;
+    }
+}
+
+body {
+    background-color: #2d3748; /* Dark gray background */
+    color: white;
+}
+.carousel {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+}
+.carousel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 100%;
+    height: 100%;
+    transition: left 0.5s ease-in-out;
+}
+.carousel-slide.active {
+    left: 0;
+}
+.carousel-slide.prev {
+    left: -100%;
+}
+.carousel-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3); /* Lightened the overlay */
+    color: white;
+    text-align: center;
+}
+.carousel-content h2 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+.carousel-content p {
+    margin-top: 0.5rem;
+}
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+}
+.carousel-nav button {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+}
+.hero-section {
+    background-color: #2d3748; /* Darker gray */
+}
+.hero-section h1,
+.hero-section p {
+    color: white;
+}
+.hero-section a {
+    background-color: #fbbf24; /* Light yellow */
+    color: #1f2937; /* Dark gray */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.hero-section a:hover,
+.hero-section a:focus {
+    background-color: #2d3748; /* Dark gray */
+    color: #fbbf24; /* Light yellow */
+}
+.featured-products h2 {
+    color: white;
+}
+.featured-products .card {
+    background-color: #1f2937;
+    color: white;
+}
+.featured-products .card a {
+    color: #fbbf24; /* Light yellow */
+    transition: color 0.3s ease;
+}
+.featured-products .card a:hover {
+    color: #e4e400; /* Dark gray */
+}
+footer {
+    background-color: #1f2937; /* Dark gray */
+    color: #d1d5db; /* Light gray */
+}

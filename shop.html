@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Shop</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    .product-card {
+      background-color: #1f2937; /* Darker gray for product cards */
+      color: white;
+    }
+    .product-card a {
+      color: #fbbf24; /* Light yellow */
+    }
+    .product-card a:hover,
+    .product-card a:focus {
+      color: #e4e400;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+    .product-card:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+    .button-custom {
+      background-color: #fbbf24;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Shop Section -->
+<div class="flex-grow">
+  <section class="container mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold text-white">Shop</h2>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=divinity-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/New_factions/Deity/horus.webp" alt="Divinity Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Divinity Pack</h3>
+          <p class="mt-2">A brand-new wave of divinity clashes with the existing factions!</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">Coming Soon!</span>
+            <a href="product.html?id=divinity-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=dinosaur-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Characters/dinosaurs/allausorus.webp" alt="Dinosaur Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Dinosaur Pack</h3>
+          <p class="mt-2">The stomping has begun...</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=dinosaur-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=undead-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Characters/anime_bonnies/dual_sword_undead.webp" alt="Undead Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Undead Pack</h3>
+          <p class="mt-2">Arise, melodies of death and horror</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=undead-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=harpy-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Characters/anime_harpies/Howl_harpy.webp" alt="Harpy Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Harpy Pack</h3>
+          <p class="mt-2">Masters of the wind and sky</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=harpy-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=insect-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Evolution/struggle1.webp" alt="Insect Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Insect Pack</h3>
+          <p class="mt-2">Warriors of the earth and blessed by nature</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=insect-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=angel-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Lands/temple.webp" alt="Angel Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Angel Pack</h3>
+          <p class="mt-2">Supervisors of dawn and preventers of chaos</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=angel-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=ancient-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Characters/realistic_ancients/ancient14.webp" alt="Ancient Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Ancient Pack</h3>
+          <p class="mt-2">Nightmares from the beginning of space and time</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=ancient-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=android-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Characters/realistic_punk/Helios.webp" alt="Android Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Android Pack</h3>
+          <p class="mt-2">Otherworldly intelligent technology built to dictate the outcome of conflicts</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=android-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="product-card shadow-lg rounded-lg overflow-hidden">
+        <a href="product.html?id=dragon-pack">
+          <img class="w-full h-70 object-cover object-center" src="Images/Lands/dragon_city2.webp" alt="Dragon Pack">
+        </a>
+        <div class="p-4">
+          <h3 class="text-xl font-bold">Dragon Pack</h3>
+          <p class="mt-2">Beings of magic, stability and control</p>
+          <div class="flex justify-between items-center mt-4">
+            <span class="font-bold">$5.00</span>
+            <a href="product.html?id=dragon-pack" class="hover:text-gray-800">View Details</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repeat for other products -->
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+</script>
+
+</body>
+</html>

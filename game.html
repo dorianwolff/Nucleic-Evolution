@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleic Evolution - Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #2d3748; /* Dark gray background */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .deck {
+            width: 300px; /* 1.5 times larger */
+            height: 225px; /* 1.5 times larger */
+            background-color: #1f2937;
+            border: 4.5px solid black; /* Adjusted proportionally */
+            color: #fbbf24;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 15px; /* Adjusted proportionally */
+            border-radius: 12px; /* Adjusted proportionally */
+            position: relative;
+            padding: 15px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+        .deck:hover {
+            transform: scale(1.05);
+        }
+        .selected {
+            box-shadow: 0 0 10px yellow;
+        }
+        .remove-btn {
+            position: absolute;
+            top: -4.5px; /* Adjusted proportionally */
+            right: -4.5px; /* Adjusted proportionally */
+            background-color: #fbbf24;
+            color: black;
+            border: 4.5px solid black; /* Adjusted proportionally */
+            border-radius: 12px; /* Adjusted proportionally */
+            padding: 7.5px 15px; /* Adjusted proportionally */
+            cursor: pointer;
+            font-size: 1.2rem; /* Adjusted proportionally */
+            font-weight: normal;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .remove-btn:hover {
+            background-color: black;
+            color: #fbbf24;
+        }
+        .deck img {
+            position: absolute;
+            top: -2.2px;
+            left: -2.2px;
+            width: 80px; /* Twice as big */
+            height: 112px; /* Maintain card aspect ratio */
+            border: 1px solid black;
+            border-radius: 4px;
+        }
+        .deck .deck-name {
+            margin-top: 50px; /* Positioned lower */
+            font-size: 1.5rem; /* Slightly larger */
+            font-weight: bold;
+        }
+        .deck .card-counts {
+            position: absolute;
+            bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+        }
+        .card-count {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .yellow { color: yellow; }
+        .blue { color: lightblue; }
+        .purple { color: #CBC3E3; }
+        .red { color: lightcoral; }
+
+        .invalid {
+            animation: zoomInOut 0.5s infinite;
+            font-weight: bolder;
+        }
+        @keyframes zoomInOut {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .button-custom {
+            background-color: #fbbf24; /* Light yellow */
+            color: black;
+            border: 3px solid black; /* Adjusted proportionally */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .button-custom:hover {
+            background-color: black;
+            color: #fbbf24;
+        }
+        .button-disabled {
+            background-color: gray;
+            color: #d1d5db;
+            border: 3px solid black; /* Adjusted proportionally */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: not-allowed;
+        }
+        .button-disabled:hover {
+            background-color: gray;
+            color: #d1d5db;
+        }
+        .flex-grow {
+            flex-grow: 1;
+        }
+        footer {
+            background-color: #1f2937; /* Dark gray */
+            color: #d1d5db; /* Light gray */
+        }
+        h2 {
+            color: white; /* Ensure headers are white for contrast */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+    <!-- Game Section -->
+    <section class="container mx-auto px-6 py-8">
+        <h2 class="text-2xl font-bold mb-6">Your Decks</h2>
+        <div id="decks-container" class="flex">
+            <!-- Deck elements will be added here -->
+        </div>
+        <div class="flex space-x-4">
+            <button id="new-deck" class="button-custom mt-6">New Deck</button>
+            <button id="modify-deck" class="button-disabled mt-6">Modify</button>
+            <button id="play-button" class="button-disabled mt-6">Play</button>
+        </div>
+        <span id="login-prompt" class="hidden text-gray-300 mt-2">Please login or create an account to create a new deck</span>
+    </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+    <div class="container mx-auto text-center">
+        <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="cards.js"></script>
+<script>
+    function saveUserData(username, data) {
+        localStorage.setItem('user-' + username, JSON.stringify(data));
+    }
+
+    function getUserData(username) {
+        return JSON.parse(localStorage.getItem('user-' + username));
+    }
+
+    function updateDecks(username) {
+        const userData = getUserData(username);
+        let decks = userData.decks || [];
+        return decks;
+    }
+
+    function generateRandomDeck(faction) {
+        const unitCards = window.cards.filter(card => card.type === 'unit' && (card.faction.includes(faction) || card.faction.includes('basic')));
+        const landCards = window.cards.filter(card => card.type === 'land' && (card.faction.includes(faction) || card.faction.includes('basic')));
+        const civilizationCards = window.cards.filter(card => card.type === 'civilization' && (card.faction.includes(faction) || card.faction.includes('basic')));
+        const powerUpCards = window.cards.filter(card => card.type === 'power-up' && (card.faction.includes(faction) || card.faction.includes('basic')));
+
+        const getRandomCards = (cards, count) => {
+            const uniqueCards = [...new Set(cards)];
+            return uniqueCards.sort(() => 0.5 - Math.random()).slice(0, count);
+        };
+
+        return {
+            name: `${faction.charAt(0).toUpperCase() + faction.slice(1)} Deck`,
+            cards: [
+                ...getRandomCards(unitCards, 10),
+                ...getRandomCards(landCards, 10),
+                ...getRandomCards(civilizationCards, 10),
+                ...getRandomCards(powerUpCards, 10)
+            ]
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const decksContainer = document.getElementById('decks-container');
+        const newDeckButton = document.getElementById('new-deck');
+        const modifyDeckButton = document.getElementById('modify-deck');
+        const playButton = document.getElementById('play-button');
+        const loginPrompt = document.getElementById('login-prompt');
+        const currentUser = localStorage.getItem('currentUser');
+        let selectedDeck = null;
+
+        if (!currentUser) {
+            newDeckButton.classList.add('button-disabled');
+            newDeckButton.classList.remove('button-custom');
+            newDeckButton.textContent = 'New Deck (Login Required)';
+            newDeckButton.disabled = true;
+            newDeckButton.title = "Please login or create an account to create a new deck";
+            loginPrompt.classList.remove('hidden');
+        }
+
+        let userData = getUserData(currentUser);
+        let savedDecks = userData ? userData.decks || [] : [];
+
+        function renderDecks() {
+            decksContainer.innerHTML = '';
+            savedDecks.forEach(deck => {
+                const deckElement = document.createElement('div');
+                deckElement.classList.add('deck');
+                const firstCardImage = deck.cards.length > 0 ? deck.cards[0].image : '';
+                deckElement.innerHTML = `
+          ${firstCardImage ? `<img src="${firstCardImage}" alt="${deck.cards[0].name}">` : ''}
+          <div class="deck-name">${deck.name}</div>
+          <button class="remove-btn" onclick="removeDeck('${deck.name}')">Remove</button>
+          <div class="card-counts">
+            <span class="card-count yellow">${deck.cards.filter(c => c.type === 'land').length}</span>
+            <span class="card-count blue">${deck.cards.filter(c => c.type === 'unit').length}</span>
+            <span class="card-count purple">${deck.cards.filter(c => c.type === 'power-up').length}</span>
+            <span class="card-count red">${deck.cards.filter(c => c.type === 'civilization').length}</span>
+          </div>
+        `;
+                deckElement.onclick = () => selectDeck(deck);
+                decksContainer.appendChild(deckElement);
+            });
+            validateDecks();
+        }
+
+        function selectDeck(deck) {
+            document.querySelectorAll('.deck').forEach(deckElement => deckElement.classList.remove('selected'));
+            const deckElement = [...decksContainer.children].find(de => de.querySelector('.deck-name').textContent === deck.name);
+            deckElement.classList.add('selected');
+            selectedDeck = deck;
+            modifyDeckButton.classList.remove('button-disabled');
+            modifyDeckButton.classList.add('button-custom');
+            modifyDeckButton.disabled = false;
+            if (isDeckValid(deck)) {
+                playButton.classList.remove('button-disabled');
+                playButton.classList.add('button-custom');
+                playButton.disabled = false;
+            } else {
+                playButton.classList.add('button-disabled');
+                playButton.classList.remove('button-custom');
+                playButton.disabled = true;
+            }
+        }
+
+        function isDeckValid(deck) {
+            const counts = {
+                land: deck.cards.filter(c => c.type === 'land').length,
+                unit: deck.cards.filter(c => c.type === 'unit').length,
+                powerUp: deck.cards.filter(c => c.type === 'power-up').length,
+                civilization: deck.cards.filter(c => c.type === 'civilization').length,
+            };
+            return Object.values(counts).every(count => count >= 10 && count <= 20);
+        }
+
+        function validateDecks() {
+            document.querySelectorAll('.deck').forEach(deckElement => {
+                const counts = {
+                    land: deckElement.querySelector('.card-count.yellow').textContent,
+                    unit: deckElement.querySelector('.card-count.blue').textContent,
+                    powerUp: deckElement.querySelector('.card-count.purple').textContent,
+                    civilization: deckElement.querySelector('.card-count.red').textContent,
+                };
+                for (const [type, count] of Object.entries(counts)) {
+                    const countElement = deckElement.querySelector(`.card-count.${type}`);
+                    if (countElement !==null){
+                        if (count < 10 || count > 20) {
+                            countElement.classList.add('invalid');
+                        } else {
+                            countElement.classList.remove('invalid');
+                        }
+                    }
+                }
+            });
+        }
+
+        newDeckButton.addEventListener('click', () => {
+            if (savedDecks.length < 3) {
+                let deckName = prompt('Enter the name of the new deck (max 15 characters):');
+                if (deckName) {
+                    deckName = deckName.substring(0, 15); // Limit to 15 characters
+                    savedDecks.push({ name: deckName, cards: [] });
+                    userData.decks = savedDecks;
+                    saveUserData(currentUser, userData);
+                    window.location.href = `deck-editor.html?deck=${deckName}`; // Redirect to deck editor
+                }
+            } else {
+                alert('You can only create up to 3 decks.');
+            }
+        });
+
+        modifyDeckButton.addEventListener('click', () => {
+            if (selectedDeck) {
+                window.location.href = `deck-editor.html?deck=${selectedDeck.name}`;
+            }
+        });
+
+        playButton.addEventListener('click', () => {
+            if (selectedDeck) {
+                const aiDecks = [
+                    { name: 'AI Alpha', faction: 'insect', glow: 'light-blue' },
+                    { name: 'AI Beta', faction: 'angel', glow: 'light-purple' },
+                    { name: 'AI Gamma', faction: 'dragon', glow: 'light-red' },
+                    { name: 'AI Delta', faction: 'android', glow: 'light-green' },
+                    { name: 'AI Epsilon', faction: 'ancient', glow: 'light-orange' },
+                    { name: 'AI Omega', faction: 'undead', glow: 'light-brown' },
+                    { name: 'AI Lambda', faction: 'harpy', glow: 'light-pink' },
+                    { name: 'AI Zeta', faction: 'dinosaur', glow: 'light-turquoise' },
+                ];
+
+                const selectedAI = aiDecks[Math.floor(Math.random() * aiDecks.length)];
+                const aiDeck = generateRandomDeck(selectedAI.faction);
+                selectedAI.deck = aiDeck;
+                selectedAI.starCard = aiDeck.cards.find(card => card.type === 'unit');
+
+                localStorage.setItem('selectedDeck', JSON.stringify(selectedDeck));
+                localStorage.setItem('selectedAI', JSON.stringify(selectedAI));
+                window.location.href = 'playing.html'; // Redirect to playing page
+            }
+        });
+
+        window.removeDeck = (deckName) => {
+            if (confirm('Are you sure you want to remove this deck?')) {
+                savedDecks = savedDecks.filter(deck => deck.name !== deckName);
+                userData.decks = savedDecks;
+                saveUserData(currentUser, userData);
+                renderDecks();
+            }
+        };
+
+        window.editDeck = (deckName) => {
+            window.location.href = `deck-editor.html?deck=${deckName}`;
+        };
+
+        renderDecks();
+    });
+
+    function updateCartCount() {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCountElement = document.getElementById('cart-count');
+        const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+        if (itemCount > 0) {
+            cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+            cartCountElement.classList.remove('hidden');
+        } else {
+            cartCountElement.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const navbarContainer = document.getElementById('navbar-container');
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                navbarContainer.innerHTML = data;
+                // Highlight the active link
+                const currentPath = window.location.pathname.split('/').pop();
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    if (link.getAttribute('href') === currentPath) {
+                        link.classList.add('active');
+                    }
+                });
+                updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+    });
+</script>
+</body>
+</html>

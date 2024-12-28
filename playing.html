@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Playing</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+    .confrontation-screen {
+      display: none;
+      text-align: center;
+      position: relative;
+    }
+    .gameplay-screen {
+      display: none;
+    }
+    .coinflip-result {
+      display: none;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .coinflip-button {
+      background-color: #fbbf24;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    .coinflip-button:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .card {
+      width: 100px;
+      height: 140px;
+      background-size: cover;
+      margin: 5px;
+      position: relative;
+      cursor: pointer;
+    }
+    .user-ai-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 50px;
+    }
+    .user-ai-container img {
+      width: 250px;
+      height: 350px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .user-info img {
+      box-shadow: 0 0 20px 5px yellow; /* Yellow glow around user's image */
+    }
+    .divider-line {
+      height: 100%;
+      width: 5px;
+      background-color: white;
+      transform: rotate(10deg);
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%) rotate(10deg);
+    }
+    .player-name,
+    .ai-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 30px; /* Moved higher above images */
+    }
+    .deck-name {
+      margin-top: 10px; /* Moved lower under the images */
+    }
+    .ai-info img.light-blue {
+      box-shadow: 0 0 20px 5px lightblue; /* Light blue glow */
+    }
+    .ai-info img.light-purple {
+      box-shadow: 0 0 20px 5px #c084fc; /* Light purple glow */
+    }
+    .ai-info img.light-red {
+      box-shadow: 0 0 20px 5px #f87171; /* Light red glow */
+    }
+    .ai-info img.light-green {
+      box-shadow: 0 0 20px 5px #34d399; /* Light green glow */
+    }
+    .ai-info img.light-orange {
+      box-shadow: 0 0 20px 5px #fbbf24; /* Light orange glow */
+    }
+    .ai-info img.light-pink {
+      box-shadow: 0 0 20px 5px #f355b0; /* Light orange glow */
+    }
+    .ai-info img.light-turquoise {
+      box-shadow: 0 0 20px 5px #5ff3e1; /* Light orange glow */
+    }
+    .ai-info img.light-brown {
+      box-shadow: 0 0 20px 5px #C4A484; /* Light orange glow */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Confrontation Screen -->
+  <section id="confrontation-screen" class="confrontation-screen container mx-auto px-6 py-8">
+    <div class="user-ai-container relative">
+      <div class="user-info">
+        <p class="player-name" id="username"></p>
+        <img id="user-deck-image" alt="User Deck Image">
+        <p class="deck-name">Deck: <span id="deck-name"></span></p>
+      </div>
+      <div class="divider-line"></div>
+      <div class="ai-info">
+        <p class="ai-name" id="ai-name"></p>
+        <img id="ai-deck-image" alt="AI Deck Image">
+        <p class="deck-name">Deck: <span id="ai-deck-name"></span></p>
+      </div>
+    </div>
+    <button id="coinflip-button" class="coinflip-button">Flip Coin</button>
+    <p id="coinflip-result" class="coinflip-result"></p>
+  </section>
+
+  <!-- Gameplay Screen -->
+  <section id="gameplay-screen" class="gameplay-screen container mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold mb-6">Playing with Deck: <span id="deck-name-gameplay"></span></h2>
+    <p>Welcome, <span id="username-gameplay"></span>!</p>
+    <div id="deck-cards" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-2">
+      <!-- Deck cards will be displayed here -->
+    </div>
+    <p id="turn-indicator" class="text-xl mt-6"></p>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath || link.getAttribute('href') === 'game.html') {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount();
+            });
+
+    const currentUser = localStorage.getItem('currentUser');
+    const activeDeck = JSON.parse(localStorage.getItem('selectedDeck'));
+    const selectedAI = JSON.parse(localStorage.getItem('selectedAI'));
+
+    if (currentUser && activeDeck && selectedAI) {
+      document.getElementById('username').textContent = currentUser;
+      document.getElementById('deck-name').textContent = activeDeck.name;
+      document.getElementById('username-gameplay').textContent = currentUser;
+      document.getElementById('deck-name-gameplay').textContent = activeDeck.name;
+
+      const highlightedCardImage = activeDeck.cards[0].image;
+      document.getElementById('user-deck-image').src = highlightedCardImage;
+
+      document.getElementById('ai-name').textContent = selectedAI.name;
+      document.getElementById('ai-deck-name').textContent = selectedAI.deck.name;
+      const aiImageElement = document.getElementById('ai-deck-image');
+      aiImageElement.src = selectedAI.starCard.fullArtImage;
+      aiImageElement.classList.add(selectedAI.glow);
+
+      document.getElementById('confrontation-screen').style.display = 'block';
+      document.getElementById('gameplay-screen').style.display = 'none';
+
+      setTimeout(() => {
+        document.getElementById('coinflip-button').style.display = 'block';
+      }, 2000); // Display the coinflip button after 2 seconds
+
+      document.getElementById('coinflip-button').addEventListener('click', () => {
+        const coinflipResult = Math.random() < 0.5 ? 'heads' : 'tails';
+        const coinflipResultElement = document.getElementById('coinflip-result');
+        coinflipResultElement.textContent = coinflipResult === 'heads' ? `${currentUser} goes first!` : `${selectedAI.name} goes first!`;
+        coinflipResultElement.style.display = 'block';
+        document.getElementById('coinflip-button').style.display = 'none';
+
+        localStorage.setItem('playerGoesFirst', JSON.stringify(coinflipResult === 'heads'));
+
+        setTimeout(() => {
+          document.getElementById('confrontation-screen').style.display = 'none';
+          document.getElementById('gameplay-screen').style.display = 'block';
+          // Proceed to the game screen
+          window.location.href = 'ingame.html'; // Redirect to the game screen
+        }, 2000); // Display the result for 2 seconds before starting the game
+      });
+    } else {
+      alert('No active deck found. Please select a deck.');
+      window.location.href = 'game.html';
+    }
+  });
+
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+</script>
+</body>
+</html>

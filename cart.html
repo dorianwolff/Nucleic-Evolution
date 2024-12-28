@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Cart</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color:#2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    .card {
+      background-color: #2d3748; /* Darker gray for product cards */
+      color: white;
+    }
+    .card a {
+      color: #fbbf24; /* Light yellow */
+    }
+    .card a:hover,
+    .card a:focus {
+      color: #1f2937; /* Dark gray */
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+    .button-custom {
+      background-color: #fbbf24;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+  </style>
+  <script>
+    function loadCart() {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartItemsContainer = document.getElementById('cart-items');
+      cartItemsContainer.innerHTML = '';
+
+      if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p class="text-white font-bold text-xl mt-12">Your cart is empty</p>';
+      } else {
+        let total = 0;
+        cart.forEach((item, index) => {
+          total += item.price * item.quantity;
+          const itemElement = document.createElement('div');
+          itemElement.classList.add('flex', 'justify-between', 'items-center', 'p-4', 'bg-gray-800', 'shadow', 'rounded-lg', 'mb-4');
+          itemElement.innerHTML = `
+            <div>
+              <h3 class="text-lg font-bold text-white">${item.title}</h3>
+              <p class="text-gray-400">$${item.price} x ${item.quantity} = $${item.price * item.quantity}</p>
+              <div class="flex items-center mt-2">
+                <button class="bg-gray-300 text-gray-700 px-2 py-1 rounded" onclick="updateQuantity(${index}, -1)">-</button>
+                <span class="mx-2 text-white">${item.quantity}</span>
+                <button class="bg-gray-300 text-gray-700 px-2 py-1 rounded" onclick="updateQuantity(${index}, 1)">+</button>
+              </div>
+            </div>
+            <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800" onclick="removeFromCart(${index})">Remove</button>
+          `;
+          cartItemsContainer.appendChild(itemElement);
+        });
+
+        const totalElement = document.createElement('div');
+        totalElement.classList.add('flex', 'justify-between', 'items-center', 'p-4', 'bg-gray-800', 'shadow', 'rounded-lg', 'mt-4');
+        totalElement.innerHTML = `
+          <h3 class="text-lg font-bold text-white">Total: $${total.toFixed(2)}</h3>
+          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800" onclick="payNow()">Pay Now</button>
+        `;
+        cartItemsContainer.appendChild(totalElement);
+      }
+
+      updateCartCount();
+    }
+
+    function updateQuantity(index, change) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart[index].quantity + change > 0) {
+        cart[index].quantity += change;
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      loadCart();
+    }
+
+    function removeFromCart(index) {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      loadCart();
+    }
+
+    function payNow() {
+      window.location.href = 'payment.html';
+    }
+
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartCountElement = document.getElementById('cart-count');
+      const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+      if (itemCount > 0) {
+        cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+        cartCountElement.classList.remove('hidden');
+      } else {
+        cartCountElement.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCart);
+  </script>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Cart Section -->
+  <section class="container mx-auto px-6 py-8">
+    <h2 class="text-2xl font-bold text-white mb-12">Your Cart</h2>
+    <div id="cart-items" class="mt-6">
+      <!-- Cart items will be dynamically loaded here -->
+    </div>
+    <div class="mt-16">
+      <a href="shop.html" class="button-custom">Continue Shopping</a>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+</script>
+
+</body>
+</html>

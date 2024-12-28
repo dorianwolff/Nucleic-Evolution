@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Over</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .message-box {
+      background-color: #374151;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 20px 5px black;
+      margin-top: 20px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .button {
+      background-color: #fbbf24;
+      color: black;
+      border: 2px solid black;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .button:disabled {
+      background-color: grey;
+      cursor: not-allowed;
+    }
+    .deck-view {
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+      background-color: black;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px 5px black;
+      max-width: 85%;
+      position: absolute;
+      top: 20px;
+    }
+    .deck-view img {
+      width: 100px;
+      height: 140px;
+      margin: 5px;
+      transition: transform 0.3s ease;
+    }
+    .deck-view img:hover {
+      transform: scale(1.4);
+    }
+    .deck-name {
+      width: 100%;
+      text-align: center;
+      color: lightgrey;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .buttons-container {
+      display: flex;
+      justify-content: center;
+      position: absolute;
+      bottom: 20px;
+    }
+    .aura-yellow {
+      box-shadow: 0 0 20px 5px yellow;
+    }
+    .aura-black {
+      box-shadow: 0 0 20px 5px black;
+    }
+    .aura-light-blue {
+      box-shadow: 0 0 20px 5px lightblue;
+    }
+    .aura-light-purple {
+      box-shadow: 0 0 20px 5px #c084fc;
+    }
+    .aura-light-red {
+      box-shadow: 0 0 20px 5px #f87171;
+    }
+    .aura-light-green {
+      box-shadow: 0 0 20px 5px #34d399;
+    }
+    .aura-light-orange {
+      box-shadow: 0 0 20px 5px #fbbf24;
+    }
+  </style>
+</head>
+<body>
+
+<div id="deck-view" class="deck-view">
+  <div class="deck-name" id="deck-name"></div>
+</div>
+<div class="message-box" id="game-result-message">
+  <h1 class="text-3xl font-bold mb-4" id="game-result-title">Game Over</h1>
+  <p id="game-result-details"></p>
+</div>
+<div class="buttons-container">
+  <button id="view-deck-button" class="button" disabled>View AI Deck</button>
+  <button id="back-to-menu-button" class="button">Back to Menu</button>
+</div>
+
+<script>
+  // history.replaceState(null, null, 'game.html'); // manages the history of the browser
+  document.addEventListener('DOMContentLoaded', () => {
+    const gameResult = JSON.parse(localStorage.getItem('gameResult'));
+    const gameResultMessage = document.getElementById('game-result-message');
+    const gameResultTitle = document.getElementById('game-result-title');
+    const gameResultDetails = document.getElementById('game-result-details');
+    const viewDeckButton = document.getElementById('view-deck-button');
+    const backToMenuButton = document.getElementById('back-to-menu-button');
+    const deckView = document.getElementById('deck-view');
+    const deckName = document.getElementById('deck-name');
+    const selectedAI = JSON.parse(localStorage.getItem('selectedAI'));
+    const aiGlowClass = `aura-${selectedAI.glow}`;
+
+    if (gameResult.winner === 'user') {
+      gameResultTitle.textContent = 'Victory!';
+      gameResultDetails.innerHTML = `Congratulations! You won with the <strong>${gameResult.playerDeck}</strong> deck.<br> The AI lost with the <strong>${gameResult.aiDeck}</strong>.`;
+      gameResultMessage.classList.add('aura-yellow');
+    } else if (gameResult.winner === 'ai') {
+      gameResultTitle.textContent = 'Defeat';
+      gameResultDetails.innerHTML = `You lost! The AI won with the <strong>${gameResult.aiDeck}</strong> deck.<br> You played with the <strong>${gameResult.playerDeck}</strong> deck.`;
+      gameResultMessage.classList.add(aiGlowClass);
+    } else {
+      gameResultTitle.textContent = 'Draw';
+      gameResultDetails.innerHTML = `It's a tie! Both you and the AI played well.<br> You played with the <strong>${gameResult.playerDeck}</strong> deck and the AI played with the <strong>${gameResult.aiDeck}</strong> deck.`;
+      gameResultMessage.classList.add('aura-black');
+    }
+
+    viewDeckButton.disabled = false;
+
+    viewDeckButton.addEventListener('click', () => {
+      if (deckView.style.display === 'flex') {
+        deckView.style.display = 'none';
+        gameResultMessage.style.display = 'block';
+        viewDeckButton.textContent = 'View AI Deck';
+      } else {
+        const aiDeck = JSON.parse(localStorage.getItem('selectedAI')).deck.cards;
+        deckView.innerHTML = '';
+        deckName.textContent = gameResult.aiDeck;
+        deckView.appendChild(deckName);
+
+        const sortedDeck = [
+          ...aiDeck.filter(card => card.type === 'land'),
+          ...aiDeck.filter(card => card.type === 'unit'),
+          ...aiDeck.filter(card => card.type === 'power-up'),
+          ...aiDeck.filter(card => card.type === 'civilization')
+        ];
+
+        sortedDeck.forEach(card => {
+          const cardImage = document.createElement('img');
+          cardImage.src = card.image;
+          deckView.appendChild(cardImage);
+        });
+
+        deckView.style.display = 'flex';
+        gameResultMessage.style.display = 'none';
+        viewDeckButton.textContent = 'Unview Deck';
+      }
+    });
+
+    backToMenuButton.addEventListener('click', () => {
+      window.location.href = 'game.html';
+    });
+  });
+</script>
+
+</body>
+</html>

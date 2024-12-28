@@ -1,0 +1,61 @@
+<!-- navbar.html -->
+<nav class="navbar shadow py-4">
+  <div class="container mx-auto px-6 flex justify-between items-center">
+    <a class="text-2xl font-bold" href="index.html">Nucleic Evolution</a>
+    <div class="flex space-x-6">
+      <a href="index.html" class="nav-link hover:text-yellow-500">Home</a>
+      <a href="shop.html" class="nav-link hover:text-yellow-500">Shop</a>
+      <a href="pack-opener.html" class="nav-link hover:text-yellow-500">Pack Opener</a>
+      <a href="game.html" class="nav-link hover:text-yellow-500">Game</a>
+      <a href="about.html" class="nav-link hover:text-yellow-500">About</a>
+      <a href="cart.html" class="nav-link hover:text-yellow-500 relative">
+        Cart
+        <span id="cart-count" class="hidden absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">0</span>
+      </a>
+      <a href="profile.html" class="nav-link hover:text-yellow-500">Profile</a>
+    </div>
+  </div>
+</nav>
+<style>
+  .navbar {
+    background-color: #1f2937; /* Dark gray */
+    color: white;
+  }
+  .navbar a {
+    color: white;
+    transition: color 0.3s ease, background-color 0.3s ease;
+  }
+  .navbar a:hover,
+  .navbar a:focus {
+    color: #fbbf24; /* Light yellow */
+  }
+  .nav-link.active {
+    background-color: #fbbf24; /* Light yellow */
+    color: #1f2937 !important; /* Dark gray */
+  }
+  .nav-link {
+    padding: 10px 20px; /* Add padding for thicker appearance */
+    border-radius: 5px;
+  }
+  #cart-count {
+    top: -10px; /* Adjusted to move the notification higher */
+    right: -10px; /* Adjusted to move the notification to the right */
+  }
+</style>
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartCount();
+  });
+</script>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - About</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white; /* White text */
+    }
+    .section-header {
+      color: white; /* White text */
+    }
+    .section-content {
+      color: #d1d5db; /* Light gray text */
+    }
+    .link-button {
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .link-button:hover,
+    .link-button:focus {
+      background-color: #2d3748; /* Dark gray */
+      color: #fbbf24; /* Light yellow */
+    }
+    .content-box {
+      background-color: #2d3748; /* Semi-transparent black background */
+      padding: 20px;
+      border-radius: 10px;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- About Section -->
+<section class="container mx-auto px-6 py-8">
+  <div class="content-box">
+    <h2 class="text-3xl font-bold section-header mb-6">About Nucleic Evolution</h2>
+    <p class="text-lg section-content mb-6">Nucleic Evolution is a fast-paced game involving both skill and luck, knowledge,
+      strategy, and bluff. Each player selects cards in order to establish their combat zones before engaging in confrontation.</p>
+  </div>
+
+  <!-- The Nucleic Lore -->
+  <div class="mt-8">
+    <h3 class="text-2xl font-bold section-header mb-4">The Lore</h3>
+    <p class="text-lg section-content mb-6">Nucleis. A vast universe constantly expanding, with one fundamental principle
+      which differs from ours. The cosmos does not expand by ellacity but by creation. As our Universe simply stretches
+      before its fated retraction, Nucleis creates matter on the border of time and space and will inevitably retract by
+      the opposite of creation; destruction.</p>
+    <p class="text-lg section-content mb-6">With an unlimited supply of matter and creation, planets overflowing with life
+      forms of different degrees of intellect are bound to emerge. Intellect, means a certain understanding of benefits,
+      power and ambition, which eventually lead to warfare. As wars carry on for centuries, even millenia, suddenly, all
+      war ceases. A sudden stop of warfares with grudges amplified over centuries can only happen in two cases; if all
+      opposing tribes are completely eradicated or if a new, bigger, unknown, threat appears. The latter happens.</p>
+    <p class="text-lg section-content mb-6">Planets, full of life forms that were mainly waging wars, collide in the cosmos.
+      Tribes, already used to bloodshed and slaughter, turn their malicious intent to a different direction. The new
+      threat of the unknown. The habitants of planets unite, almost instinctively, and face off against this new threat.</p>
+    <p class="text-lg section-content mb-6">This is the story behind Nucleic Evolution.</p>
+  </div>
+
+  <!-- Species and Strategies -->
+  <div class="mt-8">
+    <h3 class="text-2xl font-bold section-header mb-4">Species and Strategies</h3>
+    <ul class="list-disc list-inside section-content text-lg space-y-2">
+      <li>Insects: a control-oriented play-style, based on unit resources to affect combat and confrontation.</li>
+      <li>Dragons: a strategy based on winning to gain extra benefits for latter confrontation.</li>
+      <li>Harpies: playing a game within a game using resources for combat.</li>
+      <li>Androids: strong individually and forcing opponents to play one on one combat.</li>
+      <li>Ancients: the strongest creatures only once unsealed.</li>
+      <li>Angels: winning in one big sweep with strategic positioning.</li>
+      <li>Dinosaurs: nullifying opponent cards and gaining bonuses from doing so.</li>
+      <li>Undead: various benefits from losing and sacrifices.</li>
+    </ul>
+  </div>
+
+  <!-- Game Rulebook -->
+  <div class="mt-12">
+    <h3 class="text-2xl font-bold section-header mb-4">Game Rulebook</h3>
+    <p class="text-lg section-content mb-4">Download the complete rulebook for Nucleic Evolution to get started with all the rules and strategies.</p>
+    <a href="Nucleic_Rulebook.pdf" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded link-button" download>Download Rulebook</a>
+  </div>
+
+  <!-- YouTube Channel -->
+  <div class="mt-12">
+    <h3 class="text-2xl font-bold section-header mb-4">Follow Us on YouTube</h3>
+    <p class="text-lg section-content mb-4">Stay updated with our latest videos, events, and more by subscribing to our YouTube channel.</p>
+    <a href="https://www.youtube.com/channel/UCU21UBk3APN6SzTHiD1CIhw" class="inline-block bg-red-600 text-white py-2 px-4 rounded link-button" target="_blank">Subscribe to our YouTube Channel</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 mt-auto">
+  <div class="container mx-auto px-6 py-4 text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+</script>
+
+</body>
+</html>

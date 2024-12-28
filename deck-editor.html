@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Deck Editor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .deck-section {
+      border: 2px solid #4a5568;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 200px;
+      background-color: #374151;
+    }
+    .card {
+      width: 110px;
+      height: 150px;
+      background-size: cover;
+      margin: 5px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.2);
+    }
+    .card .card-info {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 10px;
+      padding: 2px;
+      text-align: center;
+    }
+    #all-cards {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .dragging {
+      opacity: 0.5;
+    }
+    .glow {
+      box-shadow: 0 0 10px yellow;
+    }
+    .button-custom {
+      background-color: #fbbf24;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: block;
+      margin: 10px auto 0;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    footer {
+      background-color: #1f2937;
+      color: #d1d5db;
+    }
+    h2, h3 {
+      color: white;
+    }
+    .form-section input {
+      background-color: #374151;
+      color: white;
+    }
+    .deck-name-input {
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #4a5568;
+      color: white;
+    }
+    .card-counts {
+      display: inline-flex;
+      margin-left: 10px;
+    }
+    .card-count {
+      margin-left: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .yellow { color: yellow; }
+    .blue { color: lightblue; }
+    .purple { color: #CBC3E3; }
+    .red { color: lightcoral; }
+    .invalid {
+      animation: zoomInOut 0.5s infinite;
+      font-weight: bolder;
+    }
+    @keyframes zoomInOut {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: transparent;
+      border: none;
+      text-align: center;
+      position: relative;
+      max-width: 80%;
+    }
+    .modal img {
+      width: 330px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+    #card-modal-name {
+      color: white;
+      font-size: 1.25rem;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Modal for displaying the enlarged card -->
+<div id="card-modal" class="modal">
+  <div class="modal-content">
+    <img id="card-modal-image" src="" alt="Card Image">
+    <h2 id="card-modal-name"></h2>
+    <button id="toggle-card-deck-button" class="button-custom"></button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Deck Editor Section -->
+  <section class="container mx-auto px-6 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <input type="text" id="deck-name-input" class="text-2xl font-bold text-white bg-gray-700 border-b-2 border-gray-400 focus:outline-none focus:border-yellow-500 deck-name-input" />
+      <div>
+        <button id="sort-button" class="button-custom mr-4" onclick="sortDeck()">Sort</button>
+        <button class="button-custom" onclick="saveDeck()">Save Deck</button>
+      </div>
+    </div>
+    <div class="deck-section mb-6" id="deck-section">
+      <h3 class="text-xl font-bold">
+        Your Deck
+        <span class="card-counts">
+          <span id="land-count" class="card-count yellow">0</span>
+          <span id="unit-count" class="card-count blue">0</span>
+          <span id="power-up-count" class="card-count purple">0</span>
+          <span id="civilization-count" class="card-count red">0</span>
+        </span>
+      </h3>
+      <div id="deck" class="flex flex-wrap mt-4"></div>
+    </div>
+    <div class="deck-section" id="all-cards-section">
+      <h3 class="text-xl font-bold">All Cards</h3>
+      <div id="all-cards" class="flex flex-wrap mt-4 overflow-x-auto"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="cards.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let deckName = urlParams.get('deck');
+    const deckNameInput = document.getElementById('deck-name-input');
+    deckNameInput.value = deckName;
+
+    const currentUser = localStorage.getItem('currentUser');
+    let userData = JSON.parse(localStorage.getItem('user-' + currentUser)) || {};
+    let savedDecks = userData.decks || [];
+    let userCollection = userData.collection || [];
+    let currentDeck = savedDecks.find(deck => deck.name === deckName) || { name: deckName, cards: [] };
+
+    const deck = currentDeck.cards;
+    const maxCardsPerType = 20;
+
+    const cardModal = document.getElementById('card-modal');
+    const cardModalImage = document.getElementById('card-modal-image');
+    const cardModalName = document.getElementById('card-modal-name');
+    const toggleCardDeckButton = document.getElementById('toggle-card-deck-button');
+    const sortButton = document.getElementById('sort-button');
+
+
+
+    // Ensure modal is hidden on load
+    cardModal.style.display = 'none';
+
+
+
+    function openCardModal(card) {
+      const userOwnsCard = userCollection.some(userCard => userCard.id === card.id);
+      cardModalImage.src = card.image;
+      cardModalName.textContent = card.cardName;
+      toggleCardDeckButton.textContent = deck.some(deckCard => deckCard.id === card.id) ? 'Remove from Deck' : 'Add to Deck';
+      toggleCardDeckButton.style.display = userOwnsCard ? 'block' : 'none';
+
+      if (!userOwnsCard) {
+        cardModalImage.style.filter = 'grayscale(100%)';
+      } else {
+        cardModalImage.style.filter = 'none';
+      }
+
+      toggleCardDeckButton.onclick = () => {
+        if (deck.some(deckCard => deckCard.id === card.id)) {
+          deck.splice(deck.findIndex(deckCard => deckCard.id === card.id), 1);
+          toggleCardDeckButton.textContent = 'Add to Deck';
+        } else {
+          deck.push(card);
+          toggleCardDeckButton.textContent = 'Remove from Deck';
+        }
+        updateDeck();
+      };
+
+      cardModal.style.display = 'flex';
+    }
+
+    cardModal.addEventListener('click', (e) => {
+      if (e.target === cardModal) {
+        cardModal.style.display = 'none';
+      }
+    });
+
+    function createCardElement(card) {
+      const cardElement = document.createElement('div');
+      cardElement.classList.add('card');
+      cardElement.style.backgroundImage = `url(${card.image})`;
+      cardElement.dataset.cardId = card.id;
+
+      const userOwnsCard = userCollection.some(userCard => userCard.id === card.id);
+
+      if (!userOwnsCard) {
+        cardElement.style.filter = 'grayscale(100%)';
+        cardElement.style.cursor = 'not-allowed';
+      } else {
+        cardElement.draggable = true;
+        cardElement.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('card-id', card.id);
+          e.dataTransfer.effectAllowed = 'move';
+          cardElement.classList.add('dragging');
+        });
+
+        cardElement.addEventListener('dragend', (e) => {
+          cardElement.classList.remove('dragging');
+        });
+      }
+
+      cardElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+
+      cardElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedCardId = e.dataTransfer.getData('card-id');
+        const draggedCardIndex = deck.findIndex(c => c.id == draggedCardId);
+        const targetCardId = e.target.closest('.card').dataset.cardId;
+        const targetCardIndex = deck.findIndex(c => c.id == targetCardId);
+
+        if (draggedCardIndex > -1 && targetCardIndex > -1 && draggedCardIndex !== targetCardIndex) {
+          const [draggedCard] = deck.splice(draggedCardIndex, 1);
+          deck.splice(targetCardIndex, 0, draggedCard);
+          updateDeck();
+        }
+      });
+
+      cardElement.addEventListener('click', () => {
+        openCardModal(card);
+      });
+
+      const cardInfo = document.createElement('div');
+      cardInfo.classList.add('card-info');
+      cardInfo.innerText = card.name;
+      cardElement.appendChild(cardInfo);
+
+      return cardElement;
+    }
+
+    function loadAllCards() {
+      const allCardsContainer = document.getElementById('all-cards');
+      allCardsContainer.innerHTML = '';
+
+      const sortedCards = window.cards.sort((a, b) => {
+        const aOwned = userCollection.some(userCard => userCard.id === a.id);
+        const bOwned = userCollection.some(userCard => userCard.id === b.id);
+
+        if (aOwned && !bOwned) return -1;
+        if (!aOwned && bOwned) return 1;
+
+        const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
+        return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+      });
+
+      sortedCards.forEach(card => {
+        const cardElement = createCardElement(card);
+        allCardsContainer.appendChild(cardElement);
+      });
+    }
+
+    function updateDeck() {
+      const deckContainer = document.getElementById('deck');
+      deckContainer.innerHTML = '';
+      deck.forEach((card, index) => {
+        const cardElement = createCardElement(card);
+        if (index === 0) {
+          cardElement.classList.add('glow');
+        }
+        deckContainer.appendChild(cardElement);
+      });
+      updateCardCounts();
+      toggleSortButton();
+    }
+
+    function updateCardCounts() {
+      const landCount = deck.filter(c => c.type === 'land').length;
+      const unitCount = deck.filter(c => c.type === 'unit').length;
+      const powerUpCount = deck.filter(c => c.type === 'power-up').length;
+      const civilizationCount = deck.filter(c => c.type === 'civilization').length;
+
+      const counts = { land: landCount, unit: unitCount, powerUp: powerUpCount, civilization: civilizationCount };
+
+      document.getElementById('land-count').textContent = landCount;
+      document.getElementById('unit-count').textContent = unitCount;
+      document.getElementById('power-up-count').textContent = powerUpCount;
+      document.getElementById('civilization-count').textContent = civilizationCount;
+
+      for (const [type, count] of Object.entries(counts)) {
+        const countElement = document.getElementById(`${type}-count`);
+        if (countElement !== null) {
+          if (count < 10 || count > 20) {
+            countElement.classList.add('invalid');
+          } else {
+            countElement.classList.remove('invalid');
+          }
+        }
+      }
+    }
+
+    function toggleSortButton() {
+      if (deck.length === 0) {
+        sortButton.disabled = true;
+        sortButton.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        sortButton.disabled = false;
+        sortButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    document.getElementById('all-cards-section').addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    document.getElementById('all-cards-section').addEventListener('drop', (e) => {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('card-id');
+      const cardIndex = deck.findIndex(c => c.id == cardId);
+      if (cardIndex > -1) {
+        const card = deck.splice(cardIndex, 1)[0];
+        updateDeck();
+        const cardElement = createCardElement(card);
+        document.getElementById('all-cards').appendChild(cardElement);
+      }
+    });
+
+    document.getElementById('deck-section').addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    document.getElementById('deck-section').addEventListener('drop', (e) => {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('card-id');
+      const card = window.cards.find(c => c.id == cardId);
+      const cardCount = deck.filter(c => c.type === card.type).length;
+      if (card && cardCount < maxCardsPerType && !deck.some(c => c.id == cardId)) {
+        deck.push(card);
+        updateDeck();
+        const allCardsContainer = document.getElementById('all-cards');
+        const cardElement = allCardsContainer.querySelector(`.card[data-card-id='${cardId}']`);
+        if (cardElement) cardElement.remove();
+      }
+    });
+
+    function sortDeck() {
+      const firstCard = deck.shift();
+      deck.sort((a, b) => {
+        const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
+        return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+      });
+      deck.unshift(firstCard);
+      updateDeck();
+    }
+
+    function saveDeck() {
+      const newDeckName = deckNameInput.value.trim().slice(0, 15);
+      if (newDeckName === '') {
+        alert('Please enter a name for your deck.');
+        return;
+      }
+
+      const unitCount = deck.filter(c => c.type == 'unit').length;
+      const landCount = deck.filter(c => c.type == 'land').length;
+      const powerUpCount = deck.filter(c => c.type === 'power-up').length;
+      const civilizationCount = deck.filter(c => c.type === 'civilization').length;
+
+      if (unitCount >= 10 && landCount >= 10 && powerUpCount >= 10 && civilizationCount >= 10) {
+        const existingDeckIndex = savedDecks.findIndex(deck => deck.name === deckName);
+
+        if (existingDeckIndex !== -1) {
+          savedDecks[existingDeckIndex] = currentDeck;
+        } else {
+          savedDecks = savedDecks.filter(deck => deck.name !== deckName);
+          currentDeck.name = newDeckName;
+          savedDecks.push(currentDeck);
+        }
+
+        userData.decks = savedDecks;
+        localStorage.setItem('user-' + currentUser, JSON.stringify(userData));
+        alert('Deck saved successfully!');
+        window.location.href = 'game.html';
+      } else {
+        alert('Your deck must have at least 10 units, 10 lands, 10 power-ups, and 10 civilization cards.');
+      }
+    }
+
+    window.sortDeck = sortDeck;
+    window.saveDeck = saveDeck;
+
+    loadAllCards();
+    updateDeck();
+  });
+</script>
+
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount();
+            });
+  });
+</script>
+</body>
+</html>

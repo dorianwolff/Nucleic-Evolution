@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Payment</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #2d3748; /* Dark gray background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .form-section {
+      background-color: #374151; /* Lighter dark background for contrast */
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .form-section input {
+      background-color: #4a5568;
+      color: white;
+      border: none;
+      margin-bottom: 10px;
+    }
+    .button-custom {
+      background-color: #fbbf24; /* Light yellow */
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .button-custom:hover {
+      background-color: black;
+      color: #fbbf24;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    .center-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    footer {
+      background-color: #1f2937; /* Dark gray */
+      color: #d1d5db; /* Light gray */
+    }
+  </style>
+  <script src="https://www.paypal.com/sdk/js?client-id=AY3rmq8ZDIDzLi91-iV8rfLyhk_iAzYDY4Aym9bLsmCkqAOpzVDperLeyfM9CXy7Kp_LB8io2TcOkXd7&currency=USD"></script>
+</head>
+<body>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Main Content -->
+<div class="flex-grow">
+  <!-- Payment Section -->
+  <section class="container mx-auto px-6 py-8 center-container">
+    <h2 class="text-2xl font-bold mb-6">Payment</h2>
+
+    <div id="payment-section" class="form-section w-full max-w-md center-container">
+      <h3 class="text-xl font-bold mb-4">Enter Your Payment Details</h3>
+      <input type="text" id="card-name" placeholder="Name on Card" class="w-full p-2 rounded-md">
+      <div id="paypal-button-container" class="mt-4"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-800 py-4 mt-6">
+  <div class="container mx-auto text-center">
+    <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: totalAmount
+            }
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          alert('Transaction completed by ' + details.payer.name.given_name);
+          localStorage.removeItem('cart');
+          window.location.href = 'confirmation.html';
+        });
+      }
+    }).render('#paypal-button-container');
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbarContainer = document.getElementById('navbar-container');
+    fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+              navbarContainer.innerHTML = data;
+              // Highlight the active link
+              const currentPath = window.location.pathname.split('/').pop();
+              document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                  link.classList.add('active');
+                }
+              });
+              updateCartCount(); // Update the cart count when the navbar is loaded
+            });
+  });
+
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartCountElement = document.getElementById('cart-count');
+    const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+    if (itemCount > 0) {
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
+      cartCountElement.classList.remove('hidden');
+    } else {
+      cartCountElement.classList.add('hidden');
+    }
+  }
+</script>
+</body>
+</html>
