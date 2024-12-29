@@ -12,67 +12,59 @@
             box-sizing: border-box;
         }
 
-        body::before {
-            position: absolute;
-            width: min(1400px, 90vw);
-            top: 10%;
-            left: 50%;
-            height: 90%;
-            transform: translateX(-50%);
-            content: '';
-            background-size: 100%;
-            background-repeat: no-repeat;
-            background-position: top center;
-            pointer-events: none;
-        }
-
         /* Add fade-out effect */
         .fade-out {
             opacity: 1;
-            transition: opacity 0.5s ease-in-out;
+            transition: none;
         }
 
         /* Transparency for inactive sections */
         .transparent {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: none;
         }
 
         /* Margin between sections */
         section {
-            margin-bottom: 4rem;
+            margin-bottom: 2rem;
         }
 
         /* Full-page sections for scroll snapping */
         .scroll-page {
-            height: 100vh;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
+            height: auto;
+            min-height: auto;
+            scroll-snap-align: none;
             position: relative;
+            margin-bottom: 2rem;
         }
 
         /* Smooth scrolling */
         html {
-            scroll-behavior: smooth;
+            scroll-behavior: auto;
         }
 
         /* Adjust carousel and banner sections */
         .carousel {
-            height: calc(100vh - 50vh); /* Adjust carousel height to half of the viewport */
-            margin-bottom: 4rem; /* Add space between the first and second pages */
+            height: 300px; /* Reduced height */
+            width: 80%; /* Reduced width */
+            margin: 2rem auto; /* Center the carousel and add margin */
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px; /* Optional: adds rounded corners */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: adds subtle shadow */
         }
 
         .banner {
-            height: 100vh;
-            padding-top: 4rem; /* Add padding to avoid overlap with the carousel */
+            height: auto;
+            padding-top: 4rem;
         }
 
         /* Adjust featured products section to accommodate footer */
         .featured-products.scroll-page {
-            height: calc(100vh - 4rem); /* Adjust height to include footer */
-            margin-bottom: 0;
+            height: auto;
+            margin-bottom: 2rem;
         }
 
         /* Make navbar sticky */
@@ -88,7 +80,239 @@
 
         /* Ensure page content doesn't overlap with sticky navbar */
         body {
-            padding-top: 60px; /* Adjust based on navbar height */
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 60px;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        .flex-grow {
+            flex-grow: 1;
+        }
+
+        /* Custom font for the title */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap');
+
+        .nucleic-title {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+            position: relative;
+            z-index: 1;
+            -webkit-text-stroke: 1px black;
+        }
+
+        .nucleic-title::before {
+            content: attr(data-content);
+            position: absolute;
+            color: rgba(251, 191, 36, 0.2);
+            z-index: -1;
+            transform: scale(1.2);
+            -webkit-text-stroke: 1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Improved slider animation */
+        .slider .item {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Add these carousel-specific styles */
+        .carousel {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(-100%); /* Changed direction */
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .carousel-slide.prev {
+            transform: translateX(100%); /* Changed direction */
+        }
+
+        .carousel-nav button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            z-index: 10;
+        }
+
+        .carousel-nav button:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        #prev {
+            left: 1rem;
+        }
+
+        #next {
+            right: 1rem;
+        }
+
+        /* Responsive layout styles */
+        @media (min-width: 768px) { /* Tablet and larger */
+            #page-1, #page-3 {
+                display: none;
+            }
+            
+            #page-2 {
+                height: calc(100vh - 60px);
+                overflow: hidden;
+            }
+            
+            .scroll-page {
+                scroll-snap-align: none;
+                scroll-snap-stop: none;
+            }
+            
+            html {
+                overflow-y: hidden;
+            }
+
+            /* Keep original navbar visible */
+            .mobile-nav, .menu-toggle, .menu-overlay {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 767px) { /* Mobile devices */
+            #page-2 {
+                display: none;
+            }
+            
+            /* Remove background image fetch on mobile */
+            body::before {
+                display: none;
+            }
+            
+            /* Fix footer positioning */
+            body {
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            footer {
+                margin-top: auto;
+                position: relative;
+                bottom: 0;
+                width: 100%;
+            }
+
+            /* Adjust scroll page for mobile */
+            .scroll-page {
+                height: auto;
+                min-height: fit-content;
+                scroll-snap-align: none;
+                margin-bottom: 2rem;
+            }
+
+            /* Remove fade effects */
+            .fade-out, .transparent {
+                opacity: 1;
+                visibility: visible;
+                transition: none;
+            }
+
+            /* Ensure proper spacing */
+            .hero-section {
+                padding-top: 70px; /* Account for fixed navbar */
+            }
+
+            /* Ensure proper content flow */
+            body {
+                overflow-y: auto;
+                padding-top: 60px; /* Space for navbar */
+            }
+
+            /* Adjust content container */
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        /* Base layout styles */
+        body {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 60px;
+            margin: 0;
+        }
+
+        /* Main content wrapper */
+        .content-wrapper {
+            flex: 1 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Footer styles */
+        footer {
+            flex-shrink: 0;
+            width: 100%;
+            background-color: #1f2937;
+            margin-top: auto;
+        }
+
+        @media (max-width: 767px) {
+            /* Mobile-specific styles */
+            body {
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            .scroll-page {
+                height: auto;
+                min-height: fit-content;
+                scroll-snap-align: none;
+                margin-bottom: 2rem;
+            }
+
+            /* Ensure content fills available space */
+            .content-wrapper {
+                flex: 1 0 auto;
+                width: 100%;
+            }
+
+            /* Remove any margin from the last section */
+            section:last-of-type {
+                margin-bottom: 0;
+            }
+
+            /* Ensure footer stays at bottom */
+            footer {
+                margin-top: auto;
+                position: relative;
+            }
         }
     </style>
     <link rel="stylesheet" href="style.css">
@@ -98,18 +322,10 @@
 <!-- Navbar -->
 <div id="navbar-container"></div>
 
+<!-- Wrap all content except footer -->
+<div class="content-wrapper">
 <!-- Hero Section + Carousel (First Scroll Page) -->
 <div class="scroll-page" id="page-1">
-    <header class="hero-section bg-cover bg-center h-1/2" style="background-image: url('https://source.unsplash.com/random/1600x900?fantasy')">
-        <div class="flex items-center justify-center h-full bg-opacity-50">
-            <div class="text-center">
-                <h1 class="text-5xl font-bold">Welcome to Nucleic Evolution</h1>
-                <p class="mt-4">Discover a world of fantasy and conflict and collect your favorite cards and packs</p>
-                <a href="shop.html" class="mt-6 inline-block py-2 px-4 rounded">Shop Now</a>
-            </div>
-        </div>
-    </header>
-
     <!-- News Carousel -->
     <div class="carousel fade-out">
         <div class="carousel-slide active">
@@ -144,6 +360,16 @@
             <button id="next">&#10095;</button>
         </div>
     </div>
+
+        <header class="hero-section bg-cover bg-center h-1/2" style="background-image: url('https://source.unsplash.com/random/1600x900?fantasy')">
+            <div class="flex items-center justify-center h-full bg-opacity-50">
+                <div class="text-center">
+                    <h1 class="text-5xl font-bold">Welcome to Nucleic Evolution</h1>
+                    <p class="mt-4">Discover a world of fantasy and conflict and collect your favorite cards and packs</p>
+                    <a href="shop.html" class="mt-6 inline-block py-2 px-4 rounded">Shop Now</a>
+                </div>
+            </div>
+        </header>
 </div>
 
 <!-- Banner (Second Scroll Page) -->
@@ -161,7 +387,7 @@
         <div class="item" style="--position: 10"><img src="Individual_Cards/Nucleic_Evolution_1_pngs/fronts/090.png" alt=""></div>
     </div>
     <div class="content">
-        <h1 data-content="Nucleic Evolution">
+            <h1 data-content="Nucleic Evolution" class="nucleic-title">
             Nucleic Evolution
         </h1>
         <div class="model"></div>
@@ -216,13 +442,16 @@
         </div>
     </div>
 </section>
+</div>
 
 <!-- Footer -->
-<footer class="bg-gray-800 mt-auto">
-    <div class="container mx-auto px-6 py-4 text-center">
+<footer class="bg-gray-800 py-4">
+    <div class="container mx-auto text-center">
         <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
     </div>
 </footer>
+
+<script src="cards.js"></script>
 
 <script>
     function updateCartCount() {
@@ -243,6 +472,41 @@
             .then(response => response.text())
             .then(data => {
                 navbarContainer.innerHTML = data;
+                
+                // Initialize mobile menu after navbar is loaded
+                const menuToggle = document.querySelector('.menu-toggle');
+                const mobileNav = document.querySelector('.mobile-nav');
+                const menuOverlay = document.querySelector('.menu-overlay');
+
+                if (menuToggle && mobileNav && menuOverlay) {
+                    menuToggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        mobileNav.classList.toggle('active');
+                        menuOverlay.classList.toggle('active');
+                        menuToggle.textContent = mobileNav.classList.contains('active') ? '✕' : '☰';
+                        document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+                    });
+
+                    menuOverlay.addEventListener('click', function() {
+                        mobileNav.classList.remove('active');
+                        menuOverlay.classList.remove('active');
+                        menuToggle.textContent = '☰';
+                        document.body.style.overflow = '';
+                    });
+
+                    // Close menu when a link is clicked
+                    const mobileLinks = document.querySelectorAll('.mobile-nav .nav-link');
+                    mobileLinks.forEach(link => {
+                        link.addEventListener('click', function() {
+                            mobileNav.classList.remove('active');
+                            menuOverlay.classList.remove('active');
+                            menuToggle.textContent = '☰';
+                            document.body.style.overflow = '';
+                        });
+                    });
+                }
+
                 // Highlight the active link
                 const currentPath = window.location.pathname.split('/').pop();
                 document.querySelectorAll('.nav-link').forEach(link => {
@@ -250,8 +514,7 @@
                         link.classList.add('active');
                     }
                 });
-
-                updateCartCount(); // Ensure cart count is updated when the navbar is loaded
+                updateCartCount();
             });
 
         let currentSlide = 0;
@@ -268,9 +531,12 @@
 
         function updateSlidePosition() {
             slides.forEach((slide, index) => {
-                slide.classList.remove('active', 'prev');
+                slide.classList.remove('active', 'prev', 'next');
+                
                 if (index === currentSlide) {
                     slide.classList.add('active');
+                } else if (index === (currentSlide + 1) % totalSlides) {
+                    slide.classList.add('next');
                 } else if (index === (currentSlide - 1 + totalSlides) % totalSlides) {
                     slide.classList.add('prev');
                 }
@@ -278,20 +544,42 @@
         }
 
         function moveToNextSlide() {
+            slides[currentSlide].classList.add('prev');
+            slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % totalSlides;
+            slides[currentSlide].classList.remove('prev', 'next');
+            slides[currentSlide].classList.add('active');
+            slides[(currentSlide + 1) % totalSlides].classList.add('next');
             updateSlidePosition();
         }
 
         function moveToPrevSlide() {
+            slides[currentSlide].classList.add('next');
+            slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            slides[currentSlide].classList.remove('prev', 'next');
+            slides[currentSlide].classList.add('active');
+            slides[(currentSlide - 1 + totalSlides) % totalSlides].classList.add('prev');
             updateSlidePosition();
         }
 
-        setInterval(() => {
-            moveToNextSlide();
-        }, 5000);
+        // Update the auto-rotation interval
+        let carouselInterval = setInterval(moveToNextSlide, 5000);
 
-        // Initial call to display the first slide
+        // Add event listeners with interval reset
+        document.getElementById('next').addEventListener('click', () => {
+            clearInterval(carouselInterval);
+            moveToPrevSlide();
+            carouselInterval = setInterval(moveToNextSlide, 5000);
+        });
+
+        document.getElementById('prev').addEventListener('click', () => {
+            clearInterval(carouselInterval);
+            moveToNextSlide();
+            carouselInterval = setInterval(moveToNextSlide, 5000);
+        });
+
+        // Initial setup
         updateSlidePosition();
 
         // Fade-out effect on scroll
@@ -345,6 +633,66 @@
 
         window.addEventListener('scroll', updateVisibility);
         updateVisibility(); // Initial call to set visibility
+
+        // Update the random card image function to ensure unique selections
+        function getRandomCardImage(excludeImages = []) {
+            // Filter cards.js entries that have an image property and are not empty
+            const cardImages = window.cards
+                .filter(card => card.image && card.image.trim() !== '')
+                .map(card => card.image)
+                .filter(image => !excludeImages.includes(image)); // Exclude already selected images
+            
+            if (cardImages.length === 0) return null; // Handle case when no unique cards are available
+            return cardImages[Math.floor(Math.random() * cardImages.length)];
+        }
+
+        // Update the slider images function to ensure unique selections
+        function updateSliderImages() {
+            const sliderItems = document.querySelectorAll('.slider .item img');
+            const selectedImages = [];
+
+            sliderItems.forEach(img => {
+                img.style.opacity = '0';
+                setTimeout(() => {
+                    const newImage = getRandomCardImage(selectedImages);
+                    if (newImage) {
+                        img.src = newImage;
+                        selectedImages.push(newImage);
+                    }
+                    img.style.opacity = '1';
+                }, 500);
+            });
+        }
+
+        // Add rotation detection
+        const slider = document.querySelector('.slider');
+        let rotationCount = 0;
+        let lastPosition = 0;
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const currentPosition = parseInt(slider.style.getPropertyValue('--position')) || 0;
+                    
+                    // Detect full rotation
+                    if (currentPosition < lastPosition) {
+                        rotationCount++;
+                        if (rotationCount % 1 === 0) { // Change cards every full rotation
+                            updateSliderImages();
+                        }
+                    }
+                    lastPosition = currentPosition;
+                }
+            });
+        });
+
+        observer.observe(slider, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        // Initial random card setup
+        updateSliderImages();
     });
 </script>
 </body>

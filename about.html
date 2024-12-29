@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nucleic Evolution - About</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="navbar.js"></script>
   <style>
     body {
       background-color: #2d3748; /* Dark gray background */
@@ -41,7 +42,7 @@
 <div id="navbar-container"></div>
 
 <!-- About Section -->
-<section class="container mx-auto px-6 py-8">
+<section class="container mx-auto px-6 py-8 mt-16">
   <div class="content-box">
     <h2 class="text-3xl font-bold section-header mb-6">About Nucleic Evolution</h2>
     <p class="text-lg section-content mb-6">Nucleic Evolution is a fast-paced game involving both skill and luck, knowledge,
@@ -116,22 +117,7 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const navbarContainer = document.getElementById('navbar-container');
-    fetch('navbar.html')
-            .then(response => response.text())
-            .then(data => {
-              navbarContainer.innerHTML = data;
-              // Highlight the active link
-              const currentPath = window.location.pathname.split('/').pop();
-              document.querySelectorAll('.nav-link').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                  link.classList.add('active');
-                }
-              });
-              updateCartCount(); // Update the cart count when the navbar is loaded
-            });
-  });
+  document.addEventListener('DOMContentLoaded', setupNavbar);
 </script>
 
 </body>
