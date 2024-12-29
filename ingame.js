@@ -1,4 +1,4 @@
-// history.replaceState(null, null, 'game.html'); // manages the history of the browser
+history.replaceState(null, null, 'game.html'); // manages the history of the browser
 
 document.addEventListener('DOMContentLoaded', () => {
     const userZones = document.querySelectorAll('.user-zone');
@@ -3181,7 +3181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // When the user quits the page
     window.addEventListener('unload', function () {
-        /*
+
         playerDeck.forEach(function(card) {
             card.dataset.combat = card.dataset.rawCombat;
             card.dataset.resource = card.dataset.rawResource;
@@ -3192,7 +3192,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.resource = card.dataset.rawResource;
             card.dataset.status = [];
         });
-        */
 
     });
 

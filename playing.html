@@ -118,6 +118,56 @@
     .ai-info img.light-brown {
       box-shadow: 0 0 20px 5px #C4A484; /* Light orange glow */
     }
+    .coin {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 150px;
+      height: 150px;
+      transform-style: preserve-3d;
+      display: none;
+    }
+    
+    .coin.flipping {
+      display: block;
+      animation: flip 2s ease-out forwards;
+    }
+    
+    .coin-faces {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+    
+    .heads, .tails {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 50%;
+    }
+    
+    .heads img, .tails img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    
+    .tails {
+      transform: rotateX(180deg);
+    }
+    
+    @keyframes flip {
+      0% {
+        transform: translate(-50%, -50%) rotateX(0);
+      }
+      100% {
+        transform: translate(-50%, -50%) rotateX(var(--final-rotation));
+      }
+    }
   </style>
 </head>
 <body>
@@ -144,6 +194,16 @@
     </div>
     <button id="coinflip-button" class="coinflip-button">Flip Coin</button>
     <p id="coinflip-result" class="coinflip-result"></p>
+    <div class="coin">
+      <div class="coin-faces">
+        <div class="heads">
+          <img src="Images/heads_coin.png" alt="Heads">
+        </div>
+        <div class="tails">
+          <img src="Images/tails_coin.png" alt="Tails">
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Gameplay Screen -->
@@ -233,20 +293,33 @@
       }, 2000); // Display the coinflip button after 2 seconds
 
       document.getElementById('coinflip-button').addEventListener('click', () => {
+        const coinflipButton = document.getElementById('coinflip-button');
+        const coin = document.querySelector('.coin');
         const coinflipResult = Math.random() < 0.5 ? 'heads' : 'tails';
-        const coinflipResultElement = document.getElementById('coinflip-result');
-        coinflipResultElement.textContent = coinflipResult === 'heads' ? `${currentUser} goes first!` : `${selectedAI.name} goes first!`;
-        coinflipResultElement.style.display = 'block';
-        document.getElementById('coinflip-button').style.display = 'none';
+        const finalRotation = coinflipResult === 'heads' ? 3600 : 3780; // 10 full rotations + landing position
+        
+        // Hide button and show coin
+        coinflipButton.style.display = 'none';
+        coin.style.setProperty('--final-rotation', `${finalRotation}deg`);
+        coin.classList.add('flipping');
 
-        localStorage.setItem('playerGoesFirst', JSON.stringify(coinflipResult === 'heads'));
-
+        // Wait for animation to complete
         setTimeout(() => {
-          document.getElementById('confrontation-screen').style.display = 'none';
-          document.getElementById('gameplay-screen').style.display = 'block';
-          // Proceed to the game screen
-          window.location.href = 'ingame.html'; // Redirect to the game screen
-        }, 2000); // Display the result for 2 seconds before starting the game
+          const coinflipResultElement = document.getElementById('coinflip-result');
+          coinflipResultElement.textContent = coinflipResult === 'heads' ? 
+            `${currentUser} goes first!` : 
+            `${selectedAI.name} goes first!`;
+          coinflipResultElement.style.display = 'block';
+          
+          localStorage.setItem('playerGoesFirst', JSON.stringify(coinflipResult === 'heads'));
+
+          // Proceed to game after showing result
+          setTimeout(() => {
+            document.getElementById('confrontation-screen').style.display = 'none';
+            document.getElementById('gameplay-screen').style.display = 'block';
+            window.location.href = 'ingame.html';
+          }, 2000);
+        }, 2000);
       });
     } else {
       alert('No active deck found. Please select a deck.');

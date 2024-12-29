@@ -1,4 +1,4 @@
-// history.replaceState(null, null, 'game.html'); // manages the history of the browser
+history.replaceState(null, null, 'game.html'); // manages the history of the browser
 
 document.addEventListener('DOMContentLoaded', () => {
     const userZones = document.querySelectorAll('.user-zone');

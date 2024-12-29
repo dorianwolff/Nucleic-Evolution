@@ -121,7 +121,7 @@
 </div>
 
 <script>
-  // history.replaceState(null, null, 'game.html'); // manages the history of the browser
+  history.replaceState(null, null, 'game.html'); // manages the history of the browser
   document.addEventListener('DOMContentLoaded', () => {
     const gameResult = JSON.parse(localStorage.getItem('gameResult'));
     const gameResultMessage = document.getElementById('game-result-message');
