@@ -12,6 +12,7 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      padding-top: 60px;
     }
     .deck-section {
       border: 2px solid #4a5568;
@@ -138,6 +139,9 @@
       font-size: 1.25rem;
       margin-bottom: 15px;
     }
+    .container {
+      padding-top: 0;
+    }
   </style>
 </head>
 <body>
@@ -238,9 +242,36 @@
         if (deck.some(deckCard => deckCard.id === card.id)) {
           deck.splice(deck.findIndex(deckCard => deckCard.id === card.id), 1);
           toggleCardDeckButton.textContent = 'Add to Deck';
+          
+          // Add card back to all cards section with proper sorting
+          const allCardsContainer = document.getElementById('all-cards');
+          allCardsContainer.innerHTML = '';
+          
+          const sortedCards = window.cards.sort((a, b) => {
+            const aOwned = userCollection.some(userCard => userCard.id === a.id);
+            const bOwned = userCollection.some(userCard => userCard.id === b.id);
+            
+            if (aOwned && !bOwned) return -1;
+            if (!aOwned && bOwned) return 1;
+            
+            const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
+            return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+          }).filter(c => !deck.some(deckCard => deckCard.id === c.id));
+          
+          sortedCards.forEach(c => {
+            const cardElement = createCardElement(c);
+            allCardsContainer.appendChild(cardElement);
+          });
         } else {
           deck.push(card);
           toggleCardDeckButton.textContent = 'Remove from Deck';
+          
+          // Remove card from all cards section
+          const allCardsContainer = document.getElementById('all-cards');
+          const cardElement = allCardsContainer.querySelector(`.card[data-card-id='${card.id}']`);
+          if (cardElement) {
+            cardElement.remove();
+          }
         }
         updateDeck();
       };
@@ -321,6 +352,9 @@
 
         const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
         return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+      }).filter(card => {
+        // Filter out cards that are already in the deck
+        return !deck.some(deckCard => deckCard.id === card.id);
       });
 
       sortedCards.forEach(card => {
@@ -390,8 +424,26 @@
       if (cardIndex > -1) {
         const card = deck.splice(cardIndex, 1)[0];
         updateDeck();
-        const cardElement = createCardElement(card);
-        document.getElementById('all-cards').appendChild(cardElement);
+        
+        // Sort all cards when adding card back
+        const allCardsContainer = document.getElementById('all-cards');
+        allCardsContainer.innerHTML = '';
+        
+        const sortedCards = window.cards.sort((a, b) => {
+          const aOwned = userCollection.some(userCard => userCard.id === a.id);
+          const bOwned = userCollection.some(userCard => userCard.id === b.id);
+          
+          if (aOwned && !bOwned) return -1;
+          if (!aOwned && bOwned) return 1;
+          
+          const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
+          return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
+        }).filter(c => !deck.some(deckCard => deckCard.id === c.id));
+        
+        sortedCards.forEach(c => {
+          const cardElement = createCardElement(c);
+          allCardsContainer.appendChild(cardElement);
+        });
       }
     });
 
