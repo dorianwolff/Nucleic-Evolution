@@ -76,6 +76,30 @@
     h2 {
       color: white; /* Ensure headers are white for contrast */
     }
+    /* Update grid layout for opened cards */
+    #opened-cards {
+      display: grid;
+      justify-content: center;
+      gap: 1rem;
+    }
+    /* Default layout for larger screens (8 columns) */
+    @media (min-width: 1024px) {
+      #opened-cards {
+        grid-template-columns: repeat(8, minmax(0, 120px));
+      }
+    }
+    /* Medium screens (2-4 columns) */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #opened-cards {
+        grid-template-columns: repeat(4, minmax(0, 120px));
+      }
+    }
+    /* Small screens (2 columns) */
+    @media (max-width: 767px) {
+      #opened-cards {
+        grid-template-columns: repeat(2, minmax(0, 120px));
+      }
+    }
   </style>
 </head>
 <body>
