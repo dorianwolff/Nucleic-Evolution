@@ -131,6 +131,23 @@
         h2 {
             color: white; /* Ensure headers are white for contrast */
         }
+        .decks-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .decks-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .deck {
+                width: 300px;
+                margin: 10px 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -143,7 +160,7 @@
     <!-- Game Section -->
     <section class="container mx-auto px-6 py-8 mt-16">
         <h2 class="text-2xl font-bold mb-6">Game</h2>
-        <div id="decks-container" class="flex">
+        <div id="decks-container" class="decks-container">
             <!-- Deck elements will be added here -->
         </div>
         <div class="flex space-x-4">
