@@ -490,17 +490,25 @@
       const civilizationCount = deck.filter(c => c.type === 'civilization').length;
 
       if (unitCount >= 10 && landCount >= 10 && powerUpCount >= 10 && civilizationCount >= 10) {
-        const existingDeckIndex = savedDecks.findIndex(deck => deck.name === deckName);
+        const currentUser = localStorage.getItem('currentUser');
+        const userData = JSON.parse(localStorage.getItem('user-' + currentUser)) || { decks: [] };
+        const existingDeckIndex = userData.decks.findIndex(d => d.name === deckName);
 
         if (existingDeckIndex !== -1) {
-          savedDecks[existingDeckIndex] = currentDeck;
+          // Update existing deck
+          userData.decks[existingDeckIndex] = {
+            name: newDeckName,
+            cards: deck
+          };
         } else {
-          savedDecks = savedDecks.filter(deck => deck.name !== deckName);
-          currentDeck.name = newDeckName;
-          savedDecks.push(currentDeck);
+          // Add new deck
+          userData.decks.push({
+            name: newDeckName,
+            cards: deck
+          });
         }
 
-        userData.decks = savedDecks;
+        // Save updated user data
         localStorage.setItem('user-' + currentUser, JSON.stringify(userData));
         alert('Deck saved successfully!');
         window.location.href = 'game.html';
