@@ -708,29 +708,29 @@
     ownershipFilters.forEach(filter => filter.addEventListener('change', applyFilters));
 
     // Update clear filters functionality
+    const clearFiltersButton = document.getElementById('clear-filters');
+    
     clearFiltersButton.addEventListener('click', () => {
-      // Clear text input
-      const nameFilter = document.getElementById('name-filter');
-      nameFilter.value = '';
+      // Clear search input
+      document.getElementById('name-filter').value = '';
       
-      // Uncheck all type filters
-      typeFilters.forEach(filter => {
+      // Reset type filters
+      document.querySelectorAll('.type-filter').forEach(filter => {
         filter.checked = false;
       });
       
-      // Uncheck all faction filters
-      factionFilters.forEach(filter => {
+      // Reset faction filters
+      document.querySelectorAll('.faction-filter').forEach(filter => {
         filter.checked = false;
       });
       
-      // Reset ownership filters to checked
-      ownershipFilters.forEach(filter => {
+      // Reset ownership filters to both checked
+      document.querySelectorAll('.ownership-filter').forEach(filter => {
         filter.checked = true;
       });
       
-      // Update display with all cards and clear the search
-      loadAllCards();
-      applyFilters(); // This will now use the cleared search value
+      // Apply the cleared filters immediately
+      applyFilters();
     });
   });
 </script>
