@@ -1,0 +1,62 @@
+/* Mouse glow effect */
+.mouse-glow {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+/* Mouse trail particles */
+.mouse-trail-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: trailFade 1s ease-out forwards;
+}
+
+/* Click burst particles */
+.click-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,215,0,0.3) 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: burstOut 1s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+}
+
+@keyframes trailFade {
+    0% { 
+        opacity: 0.8; 
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% { 
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(var(--x-move, 0px), var(--y-move, -20px)) scale(0);
+    }
+}
+
+@keyframes burstOut {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(calc(var(--angle))) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.1) rotate(calc(var(--angle))) translateY(calc(var(--velocity) * 100px));
+    }
+} 
