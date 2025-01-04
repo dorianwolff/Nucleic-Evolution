@@ -46,6 +46,25 @@
       background-color: black;
       color: #fbbf24;
     }
+    #cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #ef4444;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .nav-link {
+      position: relative;
+    }
   </style>
   <script>
     function loadCart() {
@@ -84,8 +103,6 @@
         `;
         cartItemsContainer.appendChild(totalElement);
       }
-
-      updateCartCount();
     }
 
     function updateQuantity(index, change) {
@@ -101,7 +118,21 @@
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       cart.splice(index, 1);
       localStorage.setItem('cart', JSON.stringify(cart));
+      
+      // If cart is empty after removal
+      if (cart.length === 0) {
+        const cartCountElement = document.getElementById('cart-count');
+        if (cartCountElement) {
+          cartCountElement.style.display = 'none';
+          cartCountElement.textContent = '';
+        }
+      }
+      
+      // Update cart display
       loadCart();
+      
+      // Trigger storage event for other pages
+      window.dispatchEvent(new Event('storage'));
     }
 
     function payNow() {
@@ -111,16 +142,29 @@
     function updateCartCount() {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       const cartCountElement = document.getElementById('cart-count');
+      
+      // Add null check
+      if (!cartCountElement) return;
+      
       const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
       if (itemCount > 0) {
         cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
-        cartCountElement.classList.remove('hidden');
+        cartCountElement.style.display = 'flex';
       } else {
-        cartCountElement.classList.add('hidden');
+        cartCountElement.style.display = 'none';
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadCart);
+    // Wait for both DOM and navbar to be ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wait for navbar to be loaded before loading cart
+      const checkNavbar = setInterval(() => {
+        if (document.getElementById('cart-count')) {
+          clearInterval(checkNavbar);
+          loadCart();
+        }
+      }, 100);
+    });
   </script>
 </head>
 <body>

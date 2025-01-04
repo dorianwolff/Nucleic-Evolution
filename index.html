@@ -416,6 +416,27 @@
                 max-height: 3px;
             }
         }
+
+        /* Add this to your existing styles */
+        #cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ef4444;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            position: relative;
+        }
     </style>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -559,12 +580,17 @@
     function updateCartCount() {
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         const cartCountElement = document.getElementById('cart-count');
+        
+        // Check if element exists before proceeding
+        if (!cartCountElement) return;
+        
         const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
-        if (itemCount > 0) {
-            cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
-            cartCountElement.classList.remove('hidden');
+        if (itemCount <= 0) {
+            cartCountElement.style.display = 'none';
+            cartCountElement.textContent = '';
         } else {
-            cartCountElement.classList.add('hidden');
+            cartCountElement.style.display = 'flex';
+            cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
         }
     }
 
