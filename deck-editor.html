@@ -145,6 +145,34 @@
     .container {
       padding-top: 0;
     }
+    .custom-checkbox {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fbbf24;
+      border-radius: 50%;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      margin-right: 8px;
+    }
+
+    .custom-checkbox:checked {
+      background-color: #fbbf24;
+    }
+
+    .custom-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #fbbf24;
+    }
   </style>
 </head>
 <body>
@@ -172,6 +200,87 @@
         <button class="button-custom" onclick="saveDeck()">Save Deck</button>
       </div>
     </div>
+
+    <!-- Add the filter modal -->
+    <div id="filter-modal" class="modal" style="display: none;">
+      <div class="modal-content bg-gray-800 p-6 rounded-lg" style="max-width: 500px;">
+        <h2 class="text-2xl font-bold mb-6 text-yellow-500">Filter Cards</h2>
+        
+        <!-- Search input -->
+        <div class="mb-4">
+          <input type="text" id="name-filter" placeholder="Search by card name" 
+                 class="w-full p-2 rounded bg-gray-700 text-white">
+        </div>
+
+        <!-- Ownership filter -->
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Card Ownership</h3>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center">
+              <input type="checkbox" class="ownership-filter custom-checkbox" value="owned" checked> Owned
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="ownership-filter custom-checkbox" value="unowned" checked> Unowned
+            </label>
+          </div>
+        </div>
+
+        <!-- Card Type filter -->
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Card Type</h3>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center">
+              <input type="checkbox" class="type-filter custom-checkbox" value="land"> Land
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="type-filter custom-checkbox" value="unit"> Unit
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="type-filter custom-checkbox" value="power-up"> Power-up
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="type-filter custom-checkbox" value="civilization"> Civilization
+            </label>
+          </div>
+        </div>
+
+        <!-- Faction filter -->
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">Faction</h3>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="ancient"> Ancient
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="android"> Android
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="angel"> Angel
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="dinosaur"> Dinosaur
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="dragon"> Dragon
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="harpy"> Harpy
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="insect"> Insect
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="undead"> Undead
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button id="clear-filters" class="button-custom">Clear</button>
+        </div>
+      </div>
+    </div>
+
     <div class="deck-section mb-6" id="deck-section">
       <h3 class="text-xl font-bold">
         Your Deck
@@ -184,6 +293,12 @@
       </h3>
       <div id="deck" class="flex flex-wrap mt-4"></div>
     </div>
+
+    <!-- Move the filter button here -->
+    <div class="flex justify-end mb-4">
+      <button id="filter-button" class="button-custom">Filter</button>
+    </div>
+
     <div class="deck-section" id="all-cards-section">
       <h3 class="text-xl font-bold">All Cards</h3>
       <div id="all-cards" class="flex flex-wrap mt-4 overflow-x-auto"></div>
@@ -524,6 +639,99 @@
 
     loadAllCards();
     updateDeck();
+
+    // Add filter functionality
+    const filterButton = document.getElementById('filter-button');
+    const filterModal = document.getElementById('filter-modal');
+    const applyFiltersButton = document.getElementById('apply-filters');
+    const nameFilter = document.getElementById('name-filter');
+    const typeFilters = document.querySelectorAll('.type-filter');
+    const factionFilters = document.querySelectorAll('.faction-filter');
+    const ownershipFilters = document.querySelectorAll('.ownership-filter');
+
+    filterButton.addEventListener('click', () => {
+      filterModal.style.display = 'flex';
+    });
+
+    // Close modal when clicking outside
+    filterModal.addEventListener('click', (e) => {
+      if (e.target === filterModal) {
+        filterModal.style.display = 'none';
+      }
+    });
+
+    // Function to apply filters
+    function applyFilters() {
+      const name = nameFilter.value.toLowerCase();
+      const selectedTypes = Array.from(typeFilters)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+      const selectedFactions = Array.from(factionFilters)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+      const selectedOwnership = Array.from(ownershipFilters)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      // Get current deck cards
+      const deckCards = Array.from(document.getElementById('deck').children)
+        .map(cardElement => cardElement.getAttribute('data-card-id'));
+
+      // Filter cards
+      const filteredCards = window.cards.filter(card => {
+        const nameMatch = card.cardName.toLowerCase().includes(name);
+        const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(card.type);
+        const factionMatch = selectedFactions.length === 0 || 
+          (card.faction && card.faction.some(f => selectedFactions.includes(f)));
+        const isOwned = userCollection.some(userCard => userCard.id === card.id);
+        const ownershipMatch = 
+          (isOwned && selectedOwnership.includes('owned')) || 
+          (!isOwned && selectedOwnership.includes('unowned'));
+        const notInDeck = !deckCards.includes(card.id.toString());
+        
+        return nameMatch && typeMatch && factionMatch && ownershipMatch && notInDeck;
+      });
+
+      // Update display
+      const allCardsContainer = document.getElementById('all-cards');
+      allCardsContainer.innerHTML = '';
+      filteredCards.forEach(card => {
+        const cardElement = createCardElement(card);
+        allCardsContainer.appendChild(cardElement);
+      });
+    }
+
+    // Add event listeners for immediate filtering
+    nameFilter.addEventListener('input', applyFilters);
+    typeFilters.forEach(filter => filter.addEventListener('change', applyFilters));
+    factionFilters.forEach(filter => filter.addEventListener('change', applyFilters));
+    ownershipFilters.forEach(filter => filter.addEventListener('change', applyFilters));
+
+    // Update clear filters functionality
+    clearFiltersButton.addEventListener('click', () => {
+      // Clear text input
+      const nameFilter = document.getElementById('name-filter');
+      nameFilter.value = '';
+      
+      // Uncheck all type filters
+      typeFilters.forEach(filter => {
+        filter.checked = false;
+      });
+      
+      // Uncheck all faction filters
+      factionFilters.forEach(filter => {
+        filter.checked = false;
+      });
+      
+      // Reset ownership filters to checked
+      ownershipFilters.forEach(filter => {
+        filter.checked = true;
+      });
+      
+      // Update display with all cards and clear the search
+      loadAllCards();
+      applyFilters(); // This will now use the cleared search value
+    });
   });
 </script>
 
