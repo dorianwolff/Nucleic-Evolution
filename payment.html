@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nucleic Evolution - Payment</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="effects.css">
+  <script src="effects.js"></script>
+  <script src="navbar.js"></script>
   <style>
     body {
       background-color: #2d3748; /* Dark gray background */
@@ -50,6 +53,34 @@
       background-color: #1f2937; /* Dark gray */
       color: #d1d5db; /* Light gray */
     }
+    /* Add navbar cart notification styles */
+    #cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #ef4444;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+      .payment-section {
+        width: 90%;
+        margin: 0 auto;
+      }
+    }
   </style>
   <script src="https://www.paypal.com/sdk/js?client-id=AY3rmq8ZDIDzLi91-iV8rfLyhk_iAzYDY4Aym9bLsmCkqAOpzVDperLeyfM9CXy7Kp_LB8io2TcOkXd7&currency=USD"></script>
 </head>
@@ -80,6 +111,8 @@
 </footer>
 
 <script>
+  document.addEventListener('DOMContentLoaded', setupNavbar);
+
   document.addEventListener('DOMContentLoaded', () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
@@ -107,31 +140,68 @@
   document.addEventListener('DOMContentLoaded', () => {
     const navbarContainer = document.getElementById('navbar-container');
     fetch('navbar.html')
-            .then(response => response.text())
-            .then(data => {
-              navbarContainer.innerHTML = data;
-              // Highlight the active link
-              const currentPath = window.location.pathname.split('/').pop();
-              document.querySelectorAll('.nav-link').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                  link.classList.add('active');
-                }
-              });
-              updateCartCount(); // Update the cart count when the navbar is loaded
-            });
+      .then(response => response.text())
+      .then(data => {
+        navbarContainer.innerHTML = data;
+        
+        // Initialize mobile menu after navbar is loaded
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        const menuOverlay = document.querySelector('.menu-overlay');
+        
+        if (menuToggle && mobileNav && menuOverlay) {
+          menuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mobileNav.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+            menuToggle.textContent = mobileNav.classList.contains('active') ? '✕' : '☰';
+            document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+          });
+
+          // Close menu when clicking overlay
+          menuOverlay.addEventListener('click', () => {
+            mobileNav.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            menuToggle.textContent = '☰';
+            document.body.style.overflow = '';
+          });
+        }
+
+        // Highlight the active link
+        const currentPath = window.location.pathname.split('/').pop();
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+          }
+        });
+        updateCartCount();
+      });
   });
 
   function updateCartCount() {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     const cartCountElement = document.getElementById('cart-count');
+    
+    // Check if element exists before proceeding
+    if (!cartCountElement) return;
+    
     const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
-    if (itemCount > 0) {
-      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
-      cartCountElement.classList.remove('hidden');
+    if (itemCount <= 0) {
+      cartCountElement.style.display = 'none';
+      cartCountElement.textContent = '';
     } else {
-      cartCountElement.classList.add('hidden');
+      cartCountElement.style.display = 'flex';
+      cartCountElement.textContent = itemCount > 9 ? '9+' : itemCount;
     }
   }
+
+  // Listen for storage events to update cart count across tabs
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cart') {
+      updateCartCount();
+    }
+  });
 </script>
 </body>
 </html>

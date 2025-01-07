@@ -99,7 +99,7 @@
         totalElement.classList.add('flex', 'justify-between', 'items-center', 'p-4', 'bg-gray-800', 'shadow', 'rounded-lg', 'mt-4');
         totalElement.innerHTML = `
           <h3 class="text-lg font-bold text-white">Total: $${total.toFixed(2)}</h3>
-          <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800" onclick="payNow()">Pay Now</button>
+          <button class="bg-gray-600 text-white px-4 py-2 rounded cursor-not-allowed opacity-50" disabled title="Payment system coming soon!">Pay Now</button>
         `;
         cartItemsContainer.appendChild(totalElement);
       }
@@ -109,9 +109,15 @@
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       if (cart[index].quantity + change > 0) {
         cart[index].quantity += change;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        // Update cart display and notification immediately
+        loadCart();
+        updateCartCount();
+        
+        // Trigger storage event for other tabs
+        window.dispatchEvent(new Event('storage'));
       }
-      localStorage.setItem('cart', JSON.stringify(cart));
-      loadCart();
     }
 
     function removeFromCart(index) {
