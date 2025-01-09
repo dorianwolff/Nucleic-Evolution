@@ -5,7 +5,7 @@ Nucleic Evolution is turn-based card game, designed and imagined by myself, Dori
 ## Disclamer
 
 * this website and game are not finished, there may be bugs
-* please do not copy the art & ideas as they are open source without mention
+* please do not copy the art & ideas as they are open source -> read the license for more information
 
 ## Roadmap
 
