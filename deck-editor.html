@@ -268,6 +268,9 @@
           <h3 class="text-lg font-semibold mb-2">Faction</h3>
           <div class="flex flex-wrap gap-4">
             <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="basic"> Basic
+            </label>
+            <label class="flex items-center">
               <input type="checkbox" class="faction-filter custom-checkbox" value="ancient"> Ancient
             </label>
             <label class="flex items-center">
@@ -275,6 +278,9 @@
             </label>
             <label class="flex items-center">
               <input type="checkbox" class="faction-filter custom-checkbox" value="angel"> Angel
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="faction-filter custom-checkbox" value="deity"> Deity
             </label>
             <label class="flex items-center">
               <input type="checkbox" class="faction-filter custom-checkbox" value="dinosaur"> Dinosaur
@@ -380,25 +386,9 @@
           deck.splice(deck.findIndex(deckCard => deckCard.id === card.id), 1);
           toggleCardDeckButton.textContent = 'Add to Deck';
           
-          // Add card back to all cards section with proper sorting
-          const allCardsContainer = document.getElementById('all-cards');
-          allCardsContainer.innerHTML = '';
-          
-          const sortedCards = window.cards.sort((a, b) => {
-            const aOwned = userCollection.some(userCard => userCard.id === a.id);
-            const bOwned = userCollection.some(userCard => userCard.id === b.id);
-            
-            if (aOwned && !bOwned) return -1;
-            if (!aOwned && bOwned) return 1;
-            
-            const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
-            return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
-          }).filter(c => !deck.some(deckCard => deckCard.id === c.id));
-          
-          sortedCards.forEach(c => {
-            const cardElement = createCardElement(c);
-            allCardsContainer.appendChild(cardElement);
-          });
+          // Instead of directly adding the card back, just update deck and reapply filters
+          updateDeck();
+          applyFilters();
         } else {
           deck.push(card);
           toggleCardDeckButton.textContent = 'Remove from Deck';
@@ -520,7 +510,12 @@
       const powerUpCount = deck.filter(c => c.type === 'power-up').length;
       const civilizationCount = deck.filter(c => c.type === 'civilization').length;
 
-      const counts = { land: landCount, unit: unitCount, powerUp: powerUpCount, civilization: civilizationCount };
+      const counts = { 
+        'land': landCount, 
+        'unit': unitCount, 
+        'power-up': powerUpCount,  // Changed from powerUp to power-up to match HTML ID
+        'civilization': civilizationCount 
+      };
 
       document.getElementById('land-count').textContent = landCount;
       document.getElementById('unit-count').textContent = unitCount;
@@ -562,25 +557,8 @@
         const card = deck.splice(cardIndex, 1)[0];
         updateDeck();
         
-        // Sort all cards when adding card back
-        const allCardsContainer = document.getElementById('all-cards');
-        allCardsContainer.innerHTML = '';
-        
-        const sortedCards = window.cards.sort((a, b) => {
-          const aOwned = userCollection.some(userCard => userCard.id === a.id);
-          const bOwned = userCollection.some(userCard => userCard.id === b.id);
-          
-          if (aOwned && !bOwned) return -1;
-          if (!aOwned && bOwned) return 1;
-          
-          const typeOrder = ['land', 'unit', 'special-unit', 'power-up', 'civilization'];
-          return typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type);
-        }).filter(c => !deck.some(deckCard => deckCard.id === c.id));
-        
-        sortedCards.forEach(c => {
-          const cardElement = createCardElement(c);
-          allCardsContainer.appendChild(cardElement);
-        });
+        // Instead of repopulating all cards directly, just reapply filters
+        applyFilters();
       }
     });
 
@@ -751,6 +729,11 @@
       // Apply the cleared filters immediately
       applyFilters();
     });
+
+    // Apply filters immediately after page load to respect any saved filter values
+    setTimeout(() => {
+      applyFilters();
+    }, 100);
   });
 </script>
 
