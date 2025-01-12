@@ -66,6 +66,32 @@
     .nav-link {
       position: relative;
     }
+
+    .navbar {
+        z-index: 1002; /* Ensure navbar is above other elements */
+    }
+
+    .menu-toggle {
+        z-index: 1003; /* Ensure hamburger icon is above everything */
+        position: relative; /* Add this to make z-index work */
+    }
+
+    .mobile-nav {
+        z-index: 1001; /* Below the navbar but above other content */
+    }
+
+    .menu-overlay {
+        z-index: 1000; /* Below the mobile nav */
+    }
+
+    /* If there are any other elements with high z-index values, 
+       make sure they're lower than the navbar components */
+    .modal, 
+    .modal-content,
+    .popup,
+    .overlay {
+        z-index: 999;
+    }
   </style>
 </head>
 <body>
