@@ -192,6 +192,34 @@
     .nav-link {
       position: relative;
     }
+
+    @media only screen and (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+      }
+
+      #all-cards, #deck {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 2px;
+        overflow-x: hidden;
+        width: 100%;
+        padding: 4px;
+      }
+
+      .card {
+        width: calc(100% - 2px);
+        height: 0;
+        padding-bottom: 140%;
+        margin: 1px;
+        background-position: center;
+        background-size: contain;
+      }
+
+      .card:hover {
+        transform: scale(1.1);
+      }
+    }
   </style>
 </head>
 <body>
