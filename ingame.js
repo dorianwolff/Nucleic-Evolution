@@ -417,7 +417,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return cards[cards.length - 1];
     }
 
-    // Update the aiPlay function to use weighted random choice
+    function getPreferredZone(card, availableZones) {
+        if (!card.placement) return null;
+        
+        // Find the zone that matches the card's placement value (1, 2, or 3)
+        const preferredZone = availableZones.find(zone => {
+            const zoneIndex = Array.from(opponentZones).indexOf(zone);
+            return zoneIndex === card.placement - 1;
+        });
+        
+        return preferredZone;
+    }
+
     function aiPlay(cards) {
         const card = weightedRandomChoice(cards);
         lastPlayedCard = card;
@@ -425,22 +436,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPhase === 'civilization') {
             revealCardsContainer.innerHTML = '';
             if (card.name === 'Field') {
-                placeAICardOnField(card, false);
+                // For Field cards, use the new placement logic
+                const availableZones = Array.from(opponentZones);
+                const preferredZone = getPreferredZone(card, availableZones);
+                
+                if (preferredZone && Math.random() < 0.8) {
+                    placeAICardOnField(card, false, Array.from(opponentZones).indexOf(preferredZone));
+                } else {
+                    placeAICardOnField(card, false);
+                }
             } else {
                 activateAICard(card);
             }
         } else {
-            // Rest of the existing aiPlay function remains the same
             const availableZones = Array.from(opponentZones).filter(zone => {
                 const row = zone.querySelector(`.row[data-type="${card.type}"]`);
                 return row && (card.type === 'power-up' || row.children.length === 0);
             });
 
             if (availableZones.length > 0) {
-                const zoneIndex = Math.floor(Math.random() * availableZones.length);
-                const zone = availableZones[zoneIndex];
-                const row = zone.querySelector(`.row[data-type="${card.type}"]`);
+                let selectedZone;
+                const preferredZone = getPreferredZone(card, availableZones);
 
+                // 85% chance to use preferred zone if available
+                if (preferredZone && Math.random() < 0.85) {
+                    selectedZone = preferredZone;
+                } else {
+                    // Random zone if no preferred zone or 15% chance
+                    const zoneIndex = Math.floor(Math.random() * availableZones.length);
+                    selectedZone = availableZones[zoneIndex];
+                }
+
+                const row = selectedZone.querySelector(`.row[data-type="${card.type}"]`);
+                // Rest of the card placement code remains the same
                 if (row) {
                     const cardElement = document.createElement('div');
                     cardElement.className = 'placed-card';
@@ -466,9 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardElement.addEventListener('mouseleave', hideAICardChoices);
                 }
             }
-
             endTurn();
         }
+
     }
 
     function showAICardChoices(e) {
@@ -558,9 +586,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function placeAICardOnField(card, faceDown = true) {
+    function placeAICardOnField(card, faceDown = true, specificZoneIndex = null) {
         const availableZones = Array.from(opponentZones);
-        const zoneIndex = Math.floor(Math.random() * availableZones.length);
+        const zoneIndex = specificZoneIndex !== null ? specificZoneIndex : Math.floor(Math.random() * availableZones.length);
         const zone = availableZones[zoneIndex];
         const row = zone.querySelector(`.row[data-type="land"]`);
 
