@@ -3279,4 +3279,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     startTurn();
+
+    // Add touch event handlers for game cards
+    function initializeGameTouchDragAndDrop() {
+      let draggedCard = null;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      function addTouchHandlers(card) {
+        card.addEventListener('touchstart', handleTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleTouchMove, { passive: false });
+        card.addEventListener('touchend', handleTouchEnd);
+      }
+
+      function handleTouchStart(e) {
+        if (currentPlayer !== 'user' || !isValidMove(this)) return;
+        
+        e.preventDefault();
+        draggedCard = this;
+        draggedCard.classList.add('dragging');
+        const touch = e.touches[0];
+        touchStartX = touch.clientX - draggedCard.offsetLeft;
+        touchStartY = touch.clientY - draggedCard.offsetTop;
+        
+        // Store card data
+        const cardData = {
+          type: draggedCard.dataset.type,
+          name: draggedCard.dataset.name,
+          image: draggedCard.style.backgroundImage.slice(5, -2),
+          // ... other card properties ...
+        };
+        draggedCard.dataset.cardData = JSON.stringify(cardData);
+      }
+
+      function handleTouchMove(e) {
+        if (!draggedCard) return;
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        draggedCard.style.position = 'fixed';
+        draggedCard.style.zIndex = 1000;
+        draggedCard.style.left = touch.clientX - touchStartX + 'px';
+        draggedCard.style.top = touch.clientY - touchStartY + 'px';
+      }
+
+      function handleTouchEnd(e) {
+        if (!draggedCard) return;
+
+        const touch = e.changedTouches[0];
+        const dropZone = document.elementFromPoint(touch.clientX, touch.clientY);
+        const cardData = JSON.parse(draggedCard.dataset.cardData || '{}');
+
+        // Reset card styling
+        draggedCard.style.position = '';
+        draggedCard.style.zIndex = '';
+        draggedCard.style.left = '';
+        draggedCard.style.top = '';
+        draggedCard.classList.remove('dragging');
+
+        // Handle drop on valid zone
+        if (dropZone && dropZone.classList.contains('user-zone')) {
+          handleCardPlacement(dropZone, cardData);
+        }
+
+        draggedCard = null;
+      }
+
+      // Add touch handlers to new cards when they're created
+      const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.classList && node.classList.contains('card')) {
+              addTouchHandlers(node);
+            }
+          });
+        });
+      });
+
+      // Start observing for new cards
+      observer.observe(document.getElementById('reveal-cards'), { childList: true, subtree: true });
+    }
+
+    // Call this function when the game starts
+    document.addEventListener('DOMContentLoaded', () => {
+      // ... existing code ...
+      initializeGameTouchDragAndDrop();
+    });
 });

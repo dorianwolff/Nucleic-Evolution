@@ -837,6 +837,88 @@
         applyFilters(); // Apply filters once instead of multiple times
       }
     });
+
+    // Add touch event handlers for mobile drag and drop
+    function initializeTouchDragAndDrop() {
+      let draggedCard = null;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      // Add touch handlers to all cards
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('touchstart', handleTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleTouchMove, { passive: false });
+        card.addEventListener('touchend', handleTouchEnd);
+      });
+
+      function handleTouchStart(e) {
+        e.preventDefault();
+        draggedCard = this;
+        draggedCard.classList.add('dragging');
+        const touch = e.touches[0];
+        touchStartX = touch.clientX - draggedCard.offsetLeft;
+        touchStartY = touch.clientY - draggedCard.offsetTop;
+      }
+
+      function handleTouchMove(e) {
+        e.preventDefault();
+        if (!draggedCard) return;
+
+        const touch = e.touches[0];
+        draggedCard.style.position = 'fixed';
+        draggedCard.style.zIndex = 1000;
+        draggedCard.style.left = touch.clientX - touchStartX + 'px';
+        draggedCard.style.top = touch.clientY - touchStartY + 'px';
+      }
+
+      function handleTouchEnd(e) {
+        if (!draggedCard) return;
+
+        const touch = e.changedTouches[0];
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        const deckSection = document.getElementById('deck-section');
+        const allCardsSection = document.getElementById('all-cards-section');
+
+        // Reset card styling
+        draggedCard.style.position = '';
+        draggedCard.style.zIndex = '';
+        draggedCard.style.left = '';
+        draggedCard.style.top = '';
+        draggedCard.classList.remove('dragging');
+
+        // Handle drop logic
+        if (dropTarget) {
+          const cardId = draggedCard.dataset.cardId;
+          const card = window.cards.find(c => c.id == cardId);
+
+          if (deckSection.contains(dropTarget)) {
+            // Drop to deck section
+            const cardCount = deck.filter(c => c.type === card.type).length;
+            if (card && cardCount < maxCardsPerType && !deck.some(c => c.id == cardId)) {
+              deck.push(card);
+              updateDeck();
+              draggedCard.remove();
+            }
+          } else if (allCardsSection.contains(dropTarget) && deck.some(c => c.id == cardId)) {
+            // Drop to all cards section
+            const cardIndex = deck.findIndex(c => c.id == cardId);
+            if (cardIndex > -1) {
+              deck.splice(cardIndex, 1);
+              updateDeck();
+              applyFilters();
+            }
+          }
+        }
+
+        draggedCard = null;
+      }
+    }
+
+    // Call this function after cards are loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // ... existing code ...
+      initializeTouchDragAndDrop();
+    });
   });
 </script>
 
