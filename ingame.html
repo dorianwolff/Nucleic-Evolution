@@ -264,6 +264,137 @@
             pointer-events: none; /* Disable clicking and dragging */
         }
 
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 30px;
+            }
+
+            .button-custom {
+                font-size: 11px;
+                padding: 7px 13px;
+                margin-top: 5px;
+            }
+
+            .reveal-cards {
+                gap: 5px;
+            }
+
+            .placed-card:hover {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(4);
+                z-index: 1000;
+            }
+
+            .placed-card.big-card:hover {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(2);
+                z-index: 1000;
+            }
+
+            body.card-enlarged {
+                overflow: hidden;
+            }
+
+            .resource-display {
+                width: 33px;
+                height: 33px;
+                font-size: 12px;
+            }
+
+            .placed-card {
+                width: 41.25px;  /* Half of original 82.5px */
+                height: 56.25px;  /* Half of original 112.5px */
+            }
+
+            .placed-card:hover {
+                /* Keep the hover size similar to original by adjusting scale */
+                transform: scale(5);  /* Adjusted to maintain similar final size */
+            }
+
+            .placed-card.big-card {
+                width: 75px;  /* Half of original 150px */
+                height: 102px;  /* Half of original 204px */
+            }
+
+            .placed-card.big-card:hover {
+                transform: scale(3);  /* Adjusted to maintain similar final size */
+            }
+
+            .turn-indicator-box {
+                width: 133px;  /* Two thirds of original 200px */
+                height: 33px;  /* Two thirds of original 50px */
+                font-size: 13px;  /* Reduced from 20px */
+            }
+
+            /* Adjust resource and combat circles on cards */
+            .resource-circle, .combat-circle {
+                width: 23px;  /* Reduced from 35px */
+                height: 23px;  /* Reduced from 35px */
+                font-size: 15px;  /* Reduced from 22px */
+            }
+
+            .ai-choices-preview {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                z-index: 2000;
+                display: flex;
+                gap: 5px;
+                justify-content: center;
+                align-items: center;
+                width: 90vw;
+                height: auto;
+                padding: 10px;
+            }
+
+            .ai-choices-preview .ai-choice-card {
+                width: 27px !important;
+                height: 37px !important;
+                background-size: cover !important;
+                position: relative !important;
+                transform: none !important;
+                flex-shrink: 0;
+            }
+
+            /* Adjust hover effect for preview cards */
+            .ai-choices-preview .ai-choice-card:hover {
+                transform: scale(2) !important;
+            }
+
+            /* Ensure the preview container stays centered */
+            body.showing-ai-choices .ai-choices-preview {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+
+            /* Adjust drag shadow positioning for mobile */
+            .placed-card.dragging {
+                position: fixed !important;
+                pointer-events: none;
+                transform-origin: center center;
+                margin: 0;
+                transform: translate(-50%, -50%) !important;
+            }
+
+            /* Add dark overlay when showing AI choices */
+            body.showing-ai-choices::after {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1500;
+            }
+        }
+
 
 
 
@@ -344,6 +475,107 @@
             event.returnValue = ''; // This triggers the confirmation dialog in some browsers
         });
     });
+
+    // Add this to your existing DOMContentLoaded event listener
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        const cards = document.querySelectorAll('.placed-card');
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('hover-active');
+                document.body.classList.toggle('card-enlarged');
+            });
+        });
+
+        // Close enlarged card when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.placed-card')) {
+                const activeCard = document.querySelector('.hover-active');
+                if (activeCard) {
+                    activeCard.classList.remove('hover-active');
+                    document.body.classList.remove('card-enlarged');
+                }
+            }
+        });
+
+        // Modify the AI card choices preview for mobile
+        function showAICardChoicesMobile(event) {
+            const card = event.currentTarget;
+            if (card.dataset.isFaceDown === 'true' && maskActive) {
+                document.body.classList.add('showing-ai-choices');
+                
+                // Create preview container if it doesn't exist
+                let preview = document.querySelector('.ai-choices-preview');
+                if (!preview) {
+                    preview = document.createElement('div');
+                    preview.className = 'ai-choices-preview';
+                    document.body.appendChild(preview);
+                }
+
+                // Clear existing preview
+                preview.innerHTML = '';
+
+                // Add the three possible cards
+                const possibleCards = JSON.parse(card.dataset.possibleCards || '[]');
+                possibleCards.forEach(possibleCard => {
+                    const choiceCard = document.createElement('div');
+                    choiceCard.className = 'ai-choice-card';
+                    choiceCard.style.backgroundImage = `url('${possibleCard.image}')`;
+                    preview.appendChild(choiceCard);
+                });
+            }
+        }
+
+        function hideAICardChoicesMobile() {
+            const preview = document.querySelector('.ai-choices-preview');
+            if (preview) {
+                preview.remove();
+                document.body.classList.remove('showing-ai-choices');
+            }
+        }
+
+        // Update event listeners for face-down cards
+        document.querySelectorAll('.placed-card').forEach(card => {
+            if (card.dataset.isFaceDown === 'true') {
+                card.addEventListener('click', showAICardChoicesMobile);
+                // Close preview when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.ai-choices-preview') && !e.target.closest('.placed-card')) {
+                        hideAICardChoicesMobile();
+                    }
+                });
+            }
+        });
+    }
+
+    // Update the touch handling code
+    function handleTouchMove(e) {
+        if (!draggedCard) return;
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        draggedCard.style.position = 'fixed';
+        draggedCard.style.zIndex = 1000;
+        
+        // Center the card under the finger
+        draggedCard.style.left = `${touch.clientX}px`;
+        draggedCard.style.top = `${touch.clientY}px`;
+        draggedCard.style.transform = 'translate(-50%, -50%)';
+    }
+
+    // Update the touch start handler
+    function handleTouchStart(e) {
+        if (currentPlayer !== 'user' || !isValidMove(this)) return;
+        
+        e.preventDefault();
+        draggedCard = this;
+        draggedCard.classList.add('dragging');
+        
+        const touch = e.touches[0];
+        // Initial positioning
+        draggedCard.style.left = `${touch.clientX}px`;
+        draggedCard.style.top = `${touch.clientY}px`;
+        draggedCard.style.transform = 'translate(-50%, -50%)';
+    }
 </script>
 </body>
 </html>
