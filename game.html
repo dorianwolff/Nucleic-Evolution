@@ -334,7 +334,7 @@
         }
 
         newDeckButton.addEventListener('click', () => {
-            if (savedDecks.length < 3) {
+            if (savedDecks.length < 6) {
                 let deckName = prompt('Enter the name of the new deck (max 15 characters):');
                 if (deckName) {
                     deckName = deckName.substring(0, 15); // Limit to 15 characters
@@ -344,7 +344,7 @@
                     window.location.href = `deck-editor.html?deck=${deckName}`; // Redirect to deck editor
                 }
             } else {
-                alert('You can only create up to 3 decks.');
+                alert('You can only create up to 6 decks.');
             }
         });
 
