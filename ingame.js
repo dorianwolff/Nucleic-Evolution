@@ -365,18 +365,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function calculateCardWeight(card, existingPlacements) {
+        let weight = 1;
+        
+        // Add weight for non-basic faction cards
+        if (card.faction && card.faction.length > 0 && !card.faction.includes('basic')) {
+            weight += 1;
+        }
+        
+        // Add weight for placement value if it's not already used (during land and unit phases)
+        if ((currentPhase === 'land' || currentPhase === 'unit') && card.placement) {
+            // Check if this placement position is already occupied
+            const hasPlacementUsed = existingPlacements.includes(card.placement);
+            if (!hasPlacementUsed) {
+                weight += 2;
+            }
+        }
+        
+        return weight;
+    }
+
+    function weightedRandomChoice(cards) {
+        // Get existing placements for the current phase
+        const existingPlacements = Array.from(opponentZones).map(zone => {
+            const row = zone.querySelector(`.row[data-type="${currentPhase}"]`);
+            if (row && row.children.length > 0) {
+                const card = row.children[0];
+                return parseInt(card.dataset.placement);
+            }
+            return null;
+        }).filter(placement => placement !== null);
+
+        // Calculate weights for each card
+        const weights = cards.map(card => calculateCardWeight(card, existingPlacements));
+        
+        // Calculate total weight
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+        
+        // Generate random value between 0 and total weight
+        let random = Math.random() * totalWeight;
+        
+        // Choose card based on weights
+        for (let i = 0; i < cards.length; i++) {
+            random -= weights[i];
+            if (random <= 0) {
+                return cards[i];
+            }
+        }
+        
+        // Fallback to last card (shouldn't normally happen)
+        return cards[cards.length - 1];
+    }
+
+    // Update the aiPlay function to use weighted random choice
     function aiPlay(cards) {
-        const card = cards[Math.floor(Math.random() * cards.length)];
+        const card = weightedRandomChoice(cards);
         lastPlayedCard = card;
 
         if (currentPhase === 'civilization') {
             revealCardsContainer.innerHTML = '';
             if (card.name === 'Field') {
-                placeAICardOnField(card, false); // Place field card face up
+                placeAICardOnField(card, false);
             } else {
                 activateAICard(card);
             }
         } else {
+            // Rest of the existing aiPlay function remains the same
             const availableZones = Array.from(opponentZones).filter(zone => {
                 const row = zone.querySelector(`.row[data-type="${card.type}"]`);
                 return row && (card.type === 'power-up' || row.children.length === 0);
