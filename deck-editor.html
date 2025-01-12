@@ -320,8 +320,10 @@
     </div>
 
     <!-- Move the filter button here -->
-    <div class="flex justify-end mb-4">
+    <div class="flex justify-between mb-4">
+      <button id="remove-all-button" class="button-custom">Remove All</button>
       <button id="filter-button" class="button-custom">Filter</button>
+      <button id="autocomplete-button" class="button-custom" disabled>Autocomplete</button>
     </div>
 
     <div class="deck-section" id="all-cards-section">
@@ -734,6 +736,107 @@
     setTimeout(() => {
       applyFilters();
     }, 100);
+
+    // Add the autocomplete button next to the filter button in the HTML
+    const autocompleteButton = document.getElementById('autocomplete-button');
+    
+    function updateAutocompleteButton() {
+      if (deck.length === 0) {
+        autocompleteButton.disabled = true;
+        autocompleteButton.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        autocompleteButton.disabled = false;
+        autocompleteButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function autocompleteCards() {
+      const deckFactions = new Set(deck.flatMap(card => card.faction || []));
+      const ownedCards = window.cards.filter(card => userCollection.some(userCard => userCard.id === card.id));
+      
+      // Group owned cards by type
+      const cardsByType = {
+        'land': [],
+        'unit': [],
+        'power-up': [],
+        'civilization': []
+      };
+
+      // Sort cards by priority (faction match > basic > others)
+      ownedCards.forEach(card => {
+        if (!deck.some(d => d.id === card.id)) { // Skip cards already in deck
+          const hasMatchingFaction = card.faction && card.faction.some(f => deckFactions.has(f));
+          const isBasic = card.faction && card.faction.includes('basic');
+          
+          if (hasMatchingFaction) card.priority = 1;
+          else if (isBasic) card.priority = 2;
+          else card.priority = 3;
+          
+          if (cardsByType[card.type]) {
+            cardsByType[card.type].push(card);
+          }
+        }
+      });
+
+      // Sort each type group by priority
+      Object.values(cardsByType).forEach(cards => {
+        cards.sort((a, b) => a.priority - b.priority);
+      });
+
+      // Add cards until we have 10 of each type (or run out of cards)
+      Object.entries(cardsByType).forEach(([type, cards]) => {
+        const currentCount = deck.filter(c => c.type === type).length;
+        if (currentCount < 10) {
+          const neededCards = 10 - currentCount;
+          const cardsToAdd = cards.slice(0, neededCards);
+          
+          cardsToAdd.forEach(card => {
+            deck.push(card);
+            // Remove card from all cards display
+            const cardElement = document.querySelector(`.card[data-card-id='${card.id}']`);
+            if (cardElement) {
+              cardElement.remove();
+            }
+          });
+        }
+      });
+
+      updateDeck();
+    }
+
+    autocompleteButton.addEventListener('click', autocompleteCards);
+
+    // Update the updateDeck function to also update the autocomplete button
+    const originalUpdateDeck = updateDeck;
+    updateDeck = function() {
+      originalUpdateDeck();
+      updateAutocompleteButton();
+    };
+
+    // Initialize button state
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAutocompleteButton();
+    });
+
+    const removeAllButton = document.getElementById('remove-all-button');
+    
+    removeAllButton.addEventListener('click', () => {
+      if (deck.length === 0) return;
+      
+      if (confirm('Are you sure you want to remove all cards from your deck?')) {
+        // Store current deck before clearing
+        const cardsToRemove = [...deck];
+        
+        // Clear the deck by removing all elements while keeping the original array
+        deck.splice(0, deck.length);
+        
+        // Update the deck display
+        updateDeck();
+        
+        // Add all removed cards back to the all cards section
+        applyFilters(); // Apply filters once instead of multiple times
+      }
+    });
   });
 </script>
 
