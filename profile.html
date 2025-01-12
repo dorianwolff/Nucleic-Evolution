@@ -242,20 +242,7 @@
     if (currentUser) {
       displayProfile(currentUser);
     }
-    const navbarContainer = document.getElementById('navbar-container');
-    fetch('navbar.html')
-            .then(response => response.text())
-            .then(data => {
-              navbarContainer.innerHTML = data;
-              // Highlight the active link
-              const currentPath = window.location.pathname.split('/').pop();
-              document.querySelectorAll('.nav-link').forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                  link.classList.add('active');
-                }
-              });
-              updateCartCount(); // Update the cart count when the navbar is loaded
-            });
+    setupNavbar();
   });
 
   function updateCartCount() {

@@ -1,71 +1,86 @@
+function setupNavbar() {
+    const navbarContainer = document.getElementById('navbar-container');
+    
+    // Remove any existing event listeners before fetching navbar
+    cleanupNavbarListeners();
+    
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            navbarContainer.innerHTML = data;
+            initializeNavbar();
+        })
+        .catch(error => console.error('Error loading navbar:', error));
+}
+
+function cleanupNavbarListeners() {
+    // Remove old elements and their listeners
+    const oldMenuToggle = document.querySelector('.menu-toggle');
+    const oldMenuOverlay = document.querySelector('.menu-overlay');
+    const oldMobileNav = document.querySelector('.mobile-nav');
+    
+    if (oldMenuToggle) oldMenuToggle.remove();
+    if (oldMenuOverlay) oldMenuOverlay.remove();
+    if (oldMobileNav) oldMobileNav.remove();
+}
+
 function initializeNavbar() {
     const menuToggle = document.querySelector('.menu-toggle');
     const mobileNav = document.querySelector('.mobile-nav');
     const menuOverlay = document.querySelector('.menu-overlay');
 
     if (menuToggle && mobileNav && menuOverlay) {
-        menuToggle.addEventListener('click', function(e) {
+        // Create new elements to ensure clean event listeners
+        const newMenuToggle = menuToggle.cloneNode(true);
+        const newMenuOverlay = menuOverlay.cloneNode(true);
+        
+        menuToggle.parentNode.replaceChild(newMenuToggle, menuToggle);
+        menuOverlay.parentNode.replaceChild(newMenuOverlay, menuOverlay);
+
+        // Add click handler for menu toggle
+        newMenuToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             mobileNav.classList.toggle('active');
-            menuOverlay.classList.toggle('active');
-            menuToggle.textContent = mobileNav.classList.contains('active') ? '✕' : '☰';
+            newMenuOverlay.classList.toggle('active');
+            this.textContent = mobileNav.classList.contains('active') ? '✕' : '☰';
             document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
         });
 
-        menuOverlay.addEventListener('click', function() {
+        // Add click handler for overlay
+        newMenuOverlay.addEventListener('click', function() {
             mobileNav.classList.remove('active');
-            menuOverlay.classList.remove('active');
-            menuToggle.textContent = '☰';
+            newMenuOverlay.classList.remove('active');
+            newMenuToggle.textContent = '☰';
             document.body.style.overflow = '';
         });
 
+        // Add click handlers for mobile nav links
         const mobileLinks = document.querySelectorAll('.mobile-nav .nav-link');
         mobileLinks.forEach(link => {
             link.addEventListener('click', function() {
                 mobileNav.classList.remove('active');
-                menuOverlay.classList.remove('active');
-                menuToggle.textContent = '☰';
+                newMenuOverlay.classList.remove('active');
+                newMenuToggle.textContent = '☰';
                 document.body.style.overflow = '';
             });
         });
     }
 
     // Highlight active page
+    highlightActiveLink();
+    
+    // Update cart count
+    updateCartCount();
+}
+
+function highlightActiveLink() {
     const currentPath = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link').forEach(link => {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
-            if (window.innerWidth < 768) {
-                link.style.backgroundColor = 'rgba(251, 191, 36, 0.2)';
-                link.style.borderLeft = '4px solid #fbbf24';
-            }
         }
     });
-
-    // Ensure cart notification is properly initialized
-    updateCartCount();
-    
-    // Add event listener for storage changes to keep cart count in sync across pages
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'cart') {
-            updateCartCount();
-        }
-    });
-}
-
-// Function to be called when navbar is loaded
-function setupNavbar() {
-    const navbarContainer = document.getElementById('navbar-container');
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            navbarContainer.innerHTML = data;
-            initializeNavbar();
-            if (typeof updateCartCount === 'function') {
-                updateCartCount();
-            }
-        });
 }
 
 // Add this CSS to the existing navbar styles
