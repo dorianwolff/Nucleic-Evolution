@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleic Evolution - In Progress</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="effects.css">
+    <script src="effects.js"></script>
+    <script src="navbar.js"></script>
+    <style>
+        body {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        .construction-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .gear-icon {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 6px;
+            background-color: #4a5568;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #fbbf24;
+            width: 70%;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(200%);
+            }
+        }
+
+        .navbar {
+            z-index: 1002;
+        }
+
+        footer {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .menu-toggle {
+            z-index: 1003;
+            position: relative;
+        }
+
+        .mobile-nav {
+            z-index: 1001;
+        }
+
+        .menu-overlay {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <div class="construction-container mt-16">
+        <div class="gear-icon mb-6">
+            <svg class="w-24 h-24 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        
+        <h1 class="text-4xl font-bold mb-4">Under Construction</h1>
+        <p class="text-xl text-gray-300 mb-6">This feature is currently in development</p>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        
+        <div class="space-y-2 text-gray-400 mt-4">
+            <p>🔧 Working on new features</p>
+            <p>⚡ Optimizing performance</p>
+            <p>✨ Polishing the experience</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Nucleic Evolution. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Add this script to initialize the navbar
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavbar();
+        });
+    </script>
+</body>
+</html> 
