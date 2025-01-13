@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleic Evolution - Tutorial</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="effects.css">
+    <script src="effects.js"></script>
+    <script src="navbar.js"></script>
+    <script src="tutorial-cards.js"></script>
+    <style>
+        body {
+            background-color: #1f2937;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .tutorial-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: scroll;
+            scroll-behavior: smooth;
+            background-color: transparent;
+        }
+
+        .tutorial-map {
+            position: relative;
+            width: 4000px;
+            height: 1000px;
+            padding: 40px;
+            background-color: transparent;
+            z-index: 1;
+        }
+
+        .map-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 3;
+        }
+
+        .tutorial-map::before {
+            display: none;
+        }
+
+        .stage {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+            background: #e69909;
+            box-shadow: 0 0 20px #ffa500;
+            pointer-events: auto;
+        }
+
+        .stage::before {
+            content: '';
+            position: absolute;
+            width: 140%;
+            height: 140%;
+            border-radius: 50%;
+            background: inherit;
+            filter: blur(12px);
+            opacity: 0.7;
+            top: -20%;
+            left: -20%;
+            z-index: -1;
+        }
+
+        .stage-particles {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            pointer-events: none;
+        }
+
+        .stage-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: currentColor;
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleFloat 2s infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(
+                    calc(var(--tx) * 1px),
+                    calc(var(--ty) * 1px)
+                ) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .stage:hover {
+            transform: scale(1.2);
+        }
+
+        .stage.incomplete {
+            background: #e69909;
+            box-shadow: 0 0 20px #ffa500;
+        }
+
+        .stage.final {
+            background: #ff4444;
+            box-shadow: 0 0 20px #ff4444;
+        }
+
+        .stage.completed {
+            background: #22c55e;
+            box-shadow: 0 0 15px #22c55e;
+        }
+
+        .stage-label {
+            position: absolute;
+            font-weight: bold;
+            white-space: nowrap;
+            transform: translateY(-30px);
+            text-align: center;
+            width: 120px;
+            margin-left: -45px;
+            transition: color 0.3s ease;
+            z-index: 5;
+            text-shadow: -1px -1px 0 #000,  
+                         1px -1px 0 #000,
+                        -1px  1px 0 #000,
+                         1px  1px 0 #000;
+        }
+
+        .path-connection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .path {
+            stroke-width: 6px;
+            fill: none;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
+            transition: stroke 0.3s ease;
+        }
+
+        .path-incomplete {
+            stroke: #4b5563;
+        }
+
+        .path-complete {
+            stroke: #1f2937;
+        }
+
+        /* Add styles for rewards display */
+        .rewards-container {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 10px;
+            display: none;
+            z-index: 10;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .stage:hover .rewards-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reward-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reward-card {
+            width: 40px;
+            height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .reward-coin {
+            width: 20px;
+            height: 20px;
+        }
+
+        .tutorial-deck {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 204px;
+            perspective: 1000px;
+            z-index: 50;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .deck-cards {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .deck-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #2d3748;
+            border-radius: 10px;
+            border: 2px solid #4a5568;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: translateZ(var(--z-offset));
+            background-image: url('Images/Card_elements/card_back.webp');
+            background-size: cover;
+        }
+
+        .deck-info {
+            position: fixed;
+            bottom: 240px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #4a5568;
+            color: white;
+            display: none;
+            z-index: 20;
+        }
+
+        .tutorial-deck:hover .deck-info {
+            display: block;
+        }
+
+        @keyframes cardAddition {
+            0% {
+                transform: translate(0, -500px) rotate(-45deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .new-card {
+            animation: cardAddition 1s ease-out forwards;
+        }
+
+        /* Add styles for the star card */
+        .star-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            z-index: 51;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Tutorial Map -->
+    <div class="tutorial-container">
+        <div class="tutorial-map" id="tutorial-map">
+            <img src="Images/Card_elements/map.webp" alt="Tutorial Map" class="map-image">
+            <!-- Stages will be added dynamically -->
+        </div>
+    </div>
+
+    <div class="tutorial-deck" id="tutorial-deck">
+        <div class="deck-info" id="deck-info">
+            <h3 class="font-bold mb-2">Tutorial Deck</h3>
+            <p>Cards collected: <span id="card-count">0</span></p>
+        </div>
+        <div class="deck-cards" id="deck-cards">
+            <!-- Cards will be added dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const stages = [
+            { 
+                x: 900, y: 400, 
+                label: "Units", 
+                rewards: {
+                    coins: 50,
+                    cards: ['3.png', 
+                    '4.png']
+                }
+            },
+            { 
+                x: 1200, y: 600, 
+                label: "Lands", 
+                rewards: {
+                    coins: 75
+                }
+            },
+            { 
+                x: 1500, y: 300, 
+                label: "Power-Ups", 
+                rewards: {
+                    cards: ['1.png', '2.png']
+                }
+            },
+            { x: 1800, y: 700, label: "Civilisations" },
+            { x: 2100, y: 200, label: "Combat basics" },
+            { x: 2400, y: 500, label: "Effects" },
+            { x: 2600, y: 800, label: "Deck Building" },
+            { x: 2800, y: 300, label: "Strategy Basics" },
+            { x: 3000, y: 600, label: "Advanced Tactics" },
+            { x: 3200, y: 400, label: "Final Challenge" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavbar();
+            createTutorialMap();
+            initializeDeck();
+            centerOnCurrentStage();
+        });
+
+        function createStageParticles(stageElement, color) {
+            const particlesContainer = document.createElement('div');
+            particlesContainer.className = 'stage-particles';
+            
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'stage-particle';
+                particle.style.color = color;
+                
+                function resetParticle() {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 30 + Math.random() * 30;
+                    particle.style.setProperty('--tx', Math.cos(angle) * distance);
+                    particle.style.setProperty('--ty', Math.sin(angle) * distance);
+                    
+                    const delay = Math.random() * 2;
+                    particle.style.animation = 'none';
+                    particle.offsetHeight;
+                    particle.style.animation = `particleFloat 2s ${delay}s infinite`;
+                }
+                
+                resetParticle();
+                particle.addEventListener('animationend', resetParticle);
+                particlesContainer.appendChild(particle);
+            }
+            
+            stageElement.appendChild(particlesContainer);
+        }
+
+        function createTutorialMap() {
+            const tutorialMap = document.getElementById('tutorial-map');
+            const progress = JSON.parse(localStorage.getItem('tutorialProgress')) || 0;
+
+            // Create SVG container for paths
+            const pathsSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            pathsSvg.classList.add('path-connection');
+            pathsSvg.setAttribute('width', '100%');
+            pathsSvg.setAttribute('height', '100%');
+            tutorialMap.appendChild(pathsSvg);
+
+            // Create paths between nodes
+            stages.forEach((stage, index) => {
+                if (index < stages.length - 1) {
+                    const nextStage = stages[index + 1];
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.classList.add('path', index < progress ? 'path-complete' : 'path-incomplete');
+
+                    // Calculate control points for a more organic curve
+                    const startX = stage.x + 17;
+                    const startY = stage.y + 17;
+                    const endX = nextStage.x + 17;
+                    const endY = nextStage.y + 17;
+                    
+                    // Calculate middle point with some randomness
+                    const midX = (startX + endX) / 2;
+                    const midY = (startY + endY) / 2;
+                    
+                    // Add random offsets for control points
+                    const randomOffset1 = (Math.random() - 0.5) * 100;
+                    const randomOffset2 = (Math.random() - 0.5) * 100;
+                    
+                    // Create a curved path with multiple control points for more squiggliness
+                    const pathD = `M ${startX} ${startY} 
+                                  C ${midX + randomOffset1} ${midY + randomOffset2},
+                                    ${midX - randomOffset2} ${midY - randomOffset1},
+                                    ${endX} ${endY}`;
+                    
+                    path.setAttribute('d', pathD);
+                    pathsSvg.appendChild(path);
+                }
+            });
+
+            // Create nodes (rest of your existing node creation code)
+            stages.forEach((stage, index) => {
+                const stageElement = document.createElement('div');
+                const isCompleted = index < progress;
+                const isFinal = index === stages.length - 1;
+                const isFirst = index === 0;
+                const isUnlocked = index <= progress;
+                
+                stageElement.className = `stage ${isCompleted ? 'completed' : ''} ${isFinal ? 'final' : ''} ${isFirst ? 'first' : ''} ${isUnlocked ? 'unlocked' : ''}`;
+                stageElement.style.left = `${stage.x}px`;
+                stageElement.style.top = `${stage.y}px`;
+                
+                if (isFirst) {
+                    stageElement.style.background = '#c084fc';
+                    stageElement.style.boxShadow = '0 0 20px #c084fc';
+                }
+
+                // Only add click event if the stage is unlocked
+                if (isUnlocked) {
+                    stageElement.addEventListener('click', () => handleStageClick(index));
+                    stageElement.style.cursor = 'pointer';
+                } else {
+                    stageElement.style.cursor = 'not-allowed';
+                    stageElement.style.opacity = '0.6';
+                }
+
+                // Create rewards container
+                if (stage.rewards) {
+                    const rewardsContainer = document.createElement('div');
+                    rewardsContainer.className = 'rewards-container';
+                    
+                    // Add coins if present
+                    if (stage.rewards.coins) {
+                        const coinReward = document.createElement('div');
+                        coinReward.className = 'reward-item';
+                        coinReward.innerHTML = `
+                            <img src="Images/heads_coin.png" alt="Coin" class="reward-coin">
+                            <span>${stage.rewards.coins}</span>
+                        `;
+                        rewardsContainer.appendChild(coinReward);
+                    }
+                    
+                    // Add cards if present
+                    if (stage.rewards.cards) {
+                        stage.rewards.cards.forEach(cardFile => {
+                            const cardReward = document.createElement('div');
+                            cardReward.className = 'reward-item';
+                            cardReward.innerHTML = `
+                                <img src="Individual_Cards/Tutorial/fronts/${cardFile}" 
+                                     alt="Card Reward" 
+                                     class="reward-card">
+                            `;
+                            rewardsContainer.appendChild(cardReward);
+                        });
+                    }
+                    
+                    stageElement.appendChild(rewardsContainer);
+                }
+
+                const particleColor = isFirst ? '#c084fc' :
+                                    isCompleted ? '#22c55e' : 
+                                    isFinal ? '#ff4444' : 
+                                    '#ffa500';
+                createStageParticles(stageElement, particleColor);
+
+                const label = document.createElement('div');
+                label.className = 'stage-label';
+                label.textContent = stage.label;
+                label.style.color = isFirst ? '#c084fc' :
+                                   isCompleted ? '#22c55e' : 
+                                   isFinal ? '#ff4444' : 
+                                   '#ffa500';
+                stageElement.appendChild(label);
+
+                tutorialMap.appendChild(stageElement);
+            });
+        }
+
+        function centerOnCurrentStage() {
+            const progress = JSON.parse(localStorage.getItem('tutorialProgress')) || 0;
+            const currentStage = stages[progress];
+            const container = document.querySelector('.tutorial-container');
+            container.scrollLeft = currentStage.x - (container.clientWidth / 2);
+        }
+
+        function handleStageClick(index) {
+            const progress = JSON.parse(localStorage.getItem('tutorialProgress')) || 0;
+            if (index <= progress) {
+                const stage = stages[index];
+                
+                // If the stage has rewards and hasn't been claimed yet
+                if (stage.rewards) {
+                    const claimedRewards = JSON.parse(localStorage.getItem('claimedRewards') || '{}');
+                    
+                    if (!claimedRewards[index]) {
+                        let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                        
+                        // Handle coin rewards
+                        if (stage.rewards.coins) {
+                            profileData.coins = (profileData.coins || 0) + stage.rewards.coins;
+                        }
+                        
+                        // Handle card rewards
+                        if (stage.rewards.cards) {
+                            stage.rewards.cards.forEach((cardFile, i) => {
+                                // Find the card in the cards array
+                                const cardId = parseInt(cardFile.split('.')[0]) + 1; // Assuming filenames match card IDs
+                                const rewardCard = cards.find(card => card.id === cardId);
+                                
+                                if (rewardCard) {
+                                    profileData.cards = profileData.cards || [];
+                                    profileData.cards.push(rewardCard);
+                                    
+                                    setTimeout(() => {
+                                        addCardToDeck(cardFile);
+                                    }, i * 500);
+                                }
+                            });
+                        }
+                        
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                        
+                        // Mark rewards as claimed
+                        claimedRewards[index] = true;
+                        localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
+                    }
+                }
+                
+                // Store the selected stage and redirect to the battle
+                localStorage.setItem('selectedTutorialStage', index);
+                window.location.href = 'tutorial-playing.html';
+            }
+        }
+
+        function initializeDeck() {
+            // Check if this is the first time loading the tutorial
+            const isFirstTime = !localStorage.getItem('tutorialInitialized');
+            
+            const deckCards = document.getElementById('deck-cards');
+            const starterCard = cards.find(card => card.id === 6); // Get the Apprentice card
+            
+            if (isFirstTime) {
+                // Initialize tutorial progress
+                localStorage.setItem('tutorialProgress', '0');
+                localStorage.setItem('tutorialInitialized', 'true');
+                
+                // Initialize profile data
+                let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                profileData.tutorialProgress = 0;
+                profileData.campaignProgress = 0;
+                profileData.coins = profileData.coins || 0;
+                profileData.cards = profileData.cards || [];
+                profileData.cards.push(starterCard);
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+            }
+            
+            // Create star card display
+            const starCardDiv = document.createElement('div');
+            starCardDiv.className = 'star-card';
+            starCardDiv.style.backgroundImage = `url('${starterCard.image}')`;
+            document.querySelector('.tutorial-deck').appendChild(starCardDiv);
+            
+            // Create single card for initial deck
+            const card = document.createElement('div');
+            card.className = 'deck-card';
+            card.style.setProperty('--z-offset', '0px');
+            card.style.backgroundImage = "url('Images/Card_elements/card_back.webp')";
+            
+            deckCards.appendChild(card);
+            
+            // Store deck in localStorage
+            const tutorialDeck = {
+                cards: [starterCard]
+            };
+            localStorage.setItem('tutorialDeck', JSON.stringify(tutorialDeck));
+            localStorage.setItem('tutorialPlayerDeck', JSON.stringify(tutorialDeck)); // For tutorial-playing.html
+            
+            updateDeckInfo();
+            
+            if (isFirstTime) {
+                // Show collection animation for the starter card
+                const cardImage = starterCard.image.split('/').pop();
+                addCardToDeck(cardImage);
+            }
+        }
+
+        function updateDeckInfo() {
+            const cardCount = document.querySelectorAll('.deck-card').length;
+            document.getElementById('card-count').textContent = cardCount;
+            
+            // Update deck info text
+            const deckInfo = document.getElementById('deck-info');
+            deckInfo.innerHTML = `
+                <h3 class="font-bold mb-2">Tutorial Deck</h3>
+                <p>Cards collected: <span id="card-count">${cardCount}</span></p>
+            `;
+        }
+
+        function addCardToDeck(cardImage) {
+            const deckCards = document.getElementById('deck-cards');
+            const newCard = document.createElement('div');
+            newCard.className = 'deck-card new-card';
+            newCard.style.setProperty('--z-offset', `-${deckCards.children.length * 2}px`);
+            
+            // If it's a reward card, set its background image
+            if (cardImage) {
+                newCard.style.backgroundImage = `url('Individual_Cards/Tutorial/fronts/${cardImage}')`;
+                
+                // Update star card if this is a new card
+                const starCard = document.querySelector('.star-card');
+                if (starCard) {
+                    starCard.style.backgroundImage = `url('Individual_Cards/Tutorial/fronts/${cardImage}')`;
+                }
+            }
+            
+            deckCards.appendChild(newCard);
+            updateDeckInfo();
+            
+            // Remove animation class after it completes
+            newCard.addEventListener('animationend', () => {
+                newCard.classList.remove('new-card');
+                newCard.style.backgroundImage = "url('Images/Card_elements/card_back.webp')";
+            });
+        }
+    </script>
+</body>
+</html> 

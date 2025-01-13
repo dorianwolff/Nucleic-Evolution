@@ -321,7 +321,7 @@
             
             <div class="game-modes-container">
                 <!-- Tutorial Mode -->
-                <div class="game-mode" onclick="window.location.href='chose-deck.html'">
+                <div class="game-mode" onclick="window.location.href='tutorial.html'">
                     <div class="mode-image-frame">
                         <img src="Images/Card_elements/tuto.webp" alt="Tutorial Mode" class="mode-image">
                     </div>
@@ -540,6 +540,11 @@
             
             // Replace createEmbers() with createEffects()
             createEffects();
+        });
+
+        // Update the tutorial mode click handler
+        document.querySelector('.game-mode:nth-child(1)').addEventListener('click', function() {
+            window.location.href = 'tutorial.html';
         });
     </script>
 </body>

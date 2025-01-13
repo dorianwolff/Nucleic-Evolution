@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleic Evolution - Tutorial Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="effects.css">
+    <script src="effects.js"></script>
+    <script src="tutorial-cards.js"></script>
+    <style>
+        /* Copy all styles from ingame.html */
+        body {
+            background-color: #2d3748;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            height: 70%;
+            width: 80%;
+            margin-top: 10px;
+            margin-bottom: 40px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .zone {
+            background-color: rgba(31, 41, 55, 0.5);
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 250px;
+            transition: border-color 0.3s ease;
+        }
+
+        .zone.highlight {
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .card {
+            width: 120px;
+            height: 180px;
+            background-color: #1f2937;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            transform-origin: center bottom;
+        }
+
+        .card.dragging {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .card.dragging-source {
+            opacity: 0;
+        }
+
+        /* Tutorial-specific styles */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tutorial-highlight {
+            position: absolute;
+            border: 3px solid #fbbf24;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .tutorial-message {
+            background-color: #1f2937;
+            border: 3px solid #fbbf24;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            color: white;
+            text-align: center;
+        }
+
+        /* Add turn indicator styles */
+        .turn-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 10px 20px;
+            z-index: 100;
+        }
+
+        /* Add resource counter styles */
+        .resource-counter {
+            position: fixed;
+            top: 20px;
+            background-color: #1f2937;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .player-resources {
+            right: 20px;
+        }
+
+        .ai-resources {
+            left: 20px;
+        }
+
+        /* Tutorial dialogue box */
+        .tutorial-dialogue {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937;
+            border: 3px solid #fbbf24;
+            border-radius: 12px;
+            padding: 15px 25px;
+            color: white;
+            z-index: 1001;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Add turn indicator -->
+    <div class="turn-indicator">
+        Current Turn: <span id="current-turn">Player</span>
+    </div>
+
+    <!-- Add resource counters -->
+    <div class="resource-counter ai-resources">
+        AI Resources: <span id="ai-resources">3</span>
+    </div>
+    <div class="resource-counter player-resources">
+        Your Resources: <span id="player-resources">3</span>
+    </div>
+
+    <!-- Add tutorial dialogue box -->
+    <div class="tutorial-dialogue" id="tutorial-dialogue">
+        Welcome to the tutorial! Let's learn how to play.
+    </div>
+
+    <div class="game-area">
+        <!-- AI zones -->
+        <div class="zone ai-zone" data-zone="ai-left"></div>
+        <div class="zone ai-zone" data-zone="ai-center"></div>
+        <div class="zone ai-zone" data-zone="ai-right"></div>
+
+        <!-- Player zones -->
+        <div class="zone player-zone" data-zone="player-left"></div>
+        <div class="zone player-zone" data-zone="player-center"></div>
+        <div class="zone player-zone" data-zone="player-right"></div>
+    </div>
+
+    <!-- Player's hand -->
+    <div class="hand-area">
+        <div class="user-hand"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let draggedCard = null;
+        let currentStep = 0;
+
+        // Tutorial steps configuration
+        const tutorialSteps = [
+            {
+                message: "Welcome to the tutorial! Let's learn how to play Nucleic Evolution.",
+                highlight: '.user-hand'
+            },
+            {
+                message: "These are your cards. You can drag them to play them on the field.",
+                highlight: '.card'
+            },
+            {
+                message: "Drag a card to one of your zones to play it.",
+                highlight: '.user-zone'
+            },
+            {
+                message: "Each card has attack and defense values. Use them wisely!",
+                highlight: '.card-stats'
+            },
+            {
+                message: "Your opponent will play their cards in response.",
+                highlight: '.ai-zone'
+            }
+            // Add more tutorial steps as needed
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load the tutorial decks
+            const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
+            const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
+            
+            function showTutorialStep() {
+                const step = tutorialSteps[currentStep];
+                
+                // Create or update tutorial overlay
+                let overlay = document.querySelector('.tutorial-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'tutorial-overlay';
+                    document.body.appendChild(overlay);
+                }
+
+                overlay.innerHTML = `
+                    <div class="tutorial-message">
+                        <p class="mb-4">${step.message}</p>
+                        <button class="px-4 py-2 bg-green-600 rounded hover:bg-green-700" 
+                                onclick="nextTutorialStep()">
+                            Next
+                        </button>
+                    </div>
+                `;
+
+                // Add highlight if specified
+                if (step.highlight) {
+                    const element = document.querySelector(step.highlight);
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        const highlight = document.createElement('div');
+                        highlight.className = 'tutorial-highlight';
+                        highlight.style.left = `${rect.left - 5}px`;
+                        highlight.style.top = `${rect.top - 5}px`;
+                        highlight.style.width = `${rect.width + 10}px`;
+                        highlight.style.height = `${rect.height + 10}px`;
+                        document.body.appendChild(highlight);
+                    }
+                }
+            }
+
+            // Make nextTutorialStep globally available
+            window.nextTutorialStep = function() {
+                const highlight = document.querySelector('.tutorial-highlight');
+                if (highlight) highlight.remove();
+
+                currentStep++;
+                if (currentStep < tutorialSteps.length) {
+                    showTutorialStep();
+                } else {
+                    document.querySelector('.tutorial-overlay').remove();
+                }
+            };
+
+            // Initialize game area
+            const gameArea = document.querySelector('.game-area');
+            
+            // Add event listeners for drag and drop
+            document.addEventListener('mousedown', handleDragStart);
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+            document.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+
+            // Initialize the game and tutorial
+            showTutorialStep();
+            initializeGame();
+        });
+
+        // Add drag and drop handler functions
+        let draggedCard = null;
+
+        function handleDragStart(e) {
+            if (e.target.classList.contains('card')) {
+                draggedCard = e.target;
+                draggedCard.classList.add('dragging');
+                draggedCard.classList.add('dragging-source');
+                
+                draggedCard.style.position = 'fixed';
+                draggedCard.style.left = `${e.clientX}px`;
+                draggedCard.style.top = `${e.clientY}px`;
+                draggedCard.style.transform = 'translate(-50%, -50%)';
+            }
+        }
+
+        function initializeGame() {
+            // Set up initial game state
+            let playerResources = 3;
+            let aiResources = 3;
+            let currentTurn = 'player';
+
+            // Update UI
+            document.getElementById('player-resources').textContent = playerResources;
+            document.getElementById('ai-resources').textContent = aiResources;
+            document.getElementById('current-turn').textContent = 
+                currentTurn === 'player' ? 'Your Turn' : 'AI Turn';
+
+            // Load and create cards
+            const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
+            const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
+
+            // Create card elements and add them to the appropriate zones
+            tutorialPlayerDeck.cards.forEach(card => {
+                const cardElement = createCardElement(card);
+                // Add to player's hand
+                document.querySelector('.user-hand').appendChild(cardElement);
+            });
+        }
+
+        function createCardElement(card) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.dataset.cardId = card.id;
+            cardElement.innerHTML = `
+                <div class="card-content">
+                    <img src="${card.image}" alt="${card.name}" class="card-image">
+                    <div class="card-stats">
+                        <span class="attack">${card.attack}</span>
+                        <span class="defense">${card.defense}</span>
+                    </div>
+                    <div class="card-name">${card.name}</div>
+                </div>
+            `;
+            return cardElement;
+        }
+
+        // Update tutorial dialogue
+        function updateTutorialDialogue(message) {
+            document.getElementById('tutorial-dialogue').textContent = message;
+        }
+
+        // Rest of your existing code...
+    </script>
+</body>
+</html> 

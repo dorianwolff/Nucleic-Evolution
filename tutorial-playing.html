@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nucleic Evolution - Tutorial Battle</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="effects.css">
+  <script src="effects.js"></script>
+  <script src="tutorial-cards.js"></script>
+  <script src="navbar.js"></script>
+  <style>
+    /* Copy existing styles from playing.html */
+    body {
+      background-color: #2d3748;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .flex-grow {
+      flex-grow: 1;
+    }
+    .confrontation-screen {
+      display: none;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+      margin-top: 2rem;
+    }
+    .gameplay-screen {
+      display: none;
+    }
+    /* Add any tutorial-specific styles here */
+    .tutorial-message {
+      background-color: #1f2937;
+      border: 3px solid #4a5568;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 600px;
+      margin: 20px auto;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tutorial-message:hover {
+      border-color: #fbbf24;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+    #start-tutorial {
+      background-color: #1f2937;
+      border: 3px solid #4a5568;
+      border-radius: 12px;
+      padding: 15px 30px;
+      font-weight: bold;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    #start-tutorial:hover {
+      transform: translateY(-5px);
+      border-color: #fbbf24;
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div id="confrontation-screen" class="confrontation-screen">
+    <div class="tutorial-message">
+      <h2 class="text-xl font-bold mb-4" id="tutorial-stage-title">Tutorial Stage</h2>
+      <p id="tutorial-stage-description" class="mb-4">Stage description will appear here...</p>
+    </div>
+
+    <!-- Rest of the confrontation screen content -->
+    <div class="flex justify-center items-center space-x-20 mt-10">
+      <div class="text-center">
+        <h3 id="username" class="text-xl font-bold mb-2"></h3>
+        <p id="deck-name" class="text-gray-400"></p>
+        <img id="user-deck-image" class="w-64 h-96 object-cover rounded-lg mt-4" src="" alt="User Deck">
+      </div>
+      <div class="text-center">
+        <h3 id="ai-name" class="text-xl font-bold mb-2"></h3>
+        <p id="ai-deck-name" class="text-gray-400"></p>
+        <img id="ai-deck-image" class="w-64 h-96 object-cover rounded-lg mt-4" src="" alt="AI Deck">
+      </div>
+    </div>
+
+    <button id="start-tutorial" class="mt-8 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+      Start Tutorial Battle
+    </button>
+  </div>
+
+  <script>
+    // Tutorial stage configurations
+    const tutorialStages = [
+      {
+        title: "Basic Combat",
+        description: "Learn the basic combatrules of the game. We'll start with a simple deck focused on combat.",
+        aiDeck: {
+          name: "Tutorial Deck 1",
+          cards: [
+            // Add specific card IDs from tutorial-cards.js
+            // Example: cards.find(card => card.id === 101)
+            cards.find(card => card.id === 1),
+            cards.find(card => card.id === 2),
+            cards.find(card => card.id === 3)
+          ]
+        },
+        playerDeck: {
+          name: "Starter Deck",
+          cards: [
+            cards.find(card => card.id === 4),
+            cards.find(card => card.id === 5),
+            cards.find(card => card.id === 6)
+          ]
+        }
+      },
+      // Add more stages here...
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavbar();
+      const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+      const stageConfig = tutorialStages[selectedStage];
+
+      // Set up the tutorial stage
+      document.getElementById('tutorial-stage-title').textContent = stageConfig.title;
+      document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
+
+      // Set up the player info
+      const currentUser = localStorage.getItem('username') || 'Player';
+      document.getElementById('username').textContent = currentUser;
+      document.getElementById('deck-name').textContent = stageConfig.playerDeck.name;
+
+      // Set up the AI info
+      document.getElementById('ai-name').textContent = "Tutorial Guide";
+      document.getElementById('ai-deck-name').textContent = stageConfig.aiDeck.name;
+
+      // Show the confrontation screen
+      document.getElementById('confrontation-screen').style.display = 'block';
+
+      // Handle tutorial battle start
+      document.getElementById('start-tutorial').addEventListener('click', () => {
+        // Store the decks for the battle
+        localStorage.setItem('tutorialAIDeck', JSON.stringify(stageConfig.aiDeck));
+        localStorage.setItem('tutorialPlayerDeck', JSON.stringify(stageConfig.playerDeck));
+        
+        // Redirect to the game
+        window.location.href = 'tutorial-ingame.html';
+      });
+    });
+  </script>
+</body>
+</html> 
