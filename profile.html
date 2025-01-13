@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="effects.css">
   <script src="effects.js"></script>
   <script src="navbar.js"></script>
+  <script src="cards.js"></script>
   <style>
     body {
       background-color: #2d3748; /* Dark gray background */
@@ -92,6 +93,71 @@
     .overlay {
         z-index: 999;
     }
+
+    .achievements-popup {
+        display: none;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 100%;
+        margin-top: 1rem;
+        background-color: #1f2937;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        z-index: 9999;
+        width: max-content;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-box:hover .achievements-popup {
+        display: block;
+    }
+
+    .achievement-item {
+        transition: opacity 0.3s ease;
+    }
+    
+    .achievement-item.opacity-100 {
+        color: #fbbf24;
+    }
+    
+    /* Add a small arrow to the popup */
+    .achievements-popup::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #111827;
+    }
+
+    .stat-box {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-box:hover {
+        z-index: 9999;
+    }
+
+    .deck-preview {
+        background-color: #374151;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .deck-preview:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.1), 0 2px 4px -1px rgba(251, 191, 36, 0.06);
+        background-color: #4B5563;
+    }
   </style>
 </head>
 <body>
@@ -118,7 +184,7 @@
         </div>
         
         <div class="stat-box bg-gray-800 p-4 rounded-lg text-center flex-1 mx-2">
-            <img src="Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png" alt="Cards" class="w-8 h-12 mx-auto mb-2">
+            <img src="Images/Card_elements/card_back.webp" alt="Cards" class="w-8 h-12 mx-auto mb-2">
             <h3 class="text-lg font-bold mb-1">Total Cards</h3>
             <p id="profile-cards" class="text-2xl text-blue-400">0</p>
         </div>
@@ -133,6 +199,47 @@
             <div class="flex flex-col space-y-1">
                 <p class="text-sm">Tutorial: <span id="tutorial-progress" class="text-green-400">0%</span></p>
                 <p class="text-sm">Campaign: <span id="campaign-progress" class="text-green-400">0%</span></p>
+            </div>
+        </div>
+
+        <div class="stat-box bg-gray-800 p-4 rounded-lg text-center flex-1 mx-2 relative group">
+            <div class="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                <svg class="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Achievements</h3>
+            <p class="text-2xl text-yellow-400"><span id="achievements-count">0</span>/<span id="total-achievements">4</span></p>
+            
+            <!-- Achievements Popup -->
+            <div class="achievements-popup hidden group-hover:block absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-gray-900 p-4 rounded-lg shadow-lg z-50">
+                <div class="space-y-2">
+                    <div id="achievement-account" class="achievement-item flex items-center opacity-30">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z"/>
+                        </svg>
+                        <span>Account Created</span>
+                    </div>
+                    <div id="achievement-tutorial" class="achievement-item flex items-center opacity-30">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+                        </svg>
+                        <span>Tutorial Completed</span>
+                    </div>
+                    <div id="achievement-campaign" class="achievement-item flex items-center opacity-30">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
+                        </svg>
+                        <span>Campaign Completed</span>
+                    </div>
+                    <div id="achievement-ai" class="achievement-item flex items-center opacity-30">
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/>
+                        </svg>
+                        <span>All AIs Defeated</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -218,13 +325,24 @@
     const userData = getUserData(username);
     const decksContainer = document.getElementById('decks-container');
     decksContainer.innerHTML = '';
+    
     if (userData && userData.decks) {
-      userData.decks.forEach(deck => {
-        const deckElement = document.createElement('div');
-        deckElement.classList.add('deck', 'p-4', 'mb-4', 'bg-gray-700', 'rounded-lg');
-        deckElement.innerText = deck.name;
-        decksContainer.appendChild(deckElement);
-      });
+        userData.decks.forEach(deck => {
+            const deckElement = document.createElement('div');
+            deckElement.className = 'deck-preview';
+            deckElement.innerHTML = `
+                <h4 class="text-lg font-bold">${deck.name}</h4>
+                <p class="text-sm text-gray-400">Cards: ${deck.cards.length}</p>
+            `;
+            
+            // Update click handler to match chose-deck behavior
+            deckElement.addEventListener('click', () => {
+                // Store the deck name in the URL and redirect
+                window.location.href = `deck-editor.html?deck=${encodeURIComponent(deck.name)}`;
+            });
+            
+            decksContainer.appendChild(deckElement);
+        });
     }
   }
 
@@ -373,6 +491,64 @@
     const campaignProgress = Math.round(((profileData.campaignProgress || 0) / 100) * 100);
     document.getElementById('tutorial-progress').textContent = `${tutorialProgress}%`;
     document.getElementById('campaign-progress').textContent = `${campaignProgress}%`;
+    
+    // Handle achievements
+    const achievements = {
+        account: false,
+        tutorial: false,
+        campaign: false,
+        ai: false
+    };
+    
+    // Check for achievements
+    if (currentUser) {
+        achievements.account = true;
+        
+        // Check tutorial completion
+        if (profileData.tutorialProgress === 10) {
+            achievements.tutorial = true;
+        }
+        
+        // Check campaign completion (when implemented)
+        if (profileData.campaignProgress === 100) {
+            achievements.campaign = true;
+        }
+        
+        // Check AI defeats
+        const defeatedAIs = JSON.parse(localStorage.getItem('defeatedAIs') || '[]');
+        if (defeatedAIs.length === 8) {
+            achievements.ai = true;
+        }
+    }
+    
+    // Update achievement display
+    const achievedCount = Object.values(achievements).filter(Boolean).length;
+    document.getElementById('achievements-count').textContent = achievedCount;
+    
+    // Update achievement items with more detailed descriptions
+    Object.entries(achievements).forEach(([key, achieved]) => {
+        const element = document.getElementById(`achievement-${key}`);
+        if (achieved) {
+            element.classList.remove('opacity-30');
+            element.classList.add('opacity-100');
+            
+            // Add tooltips or descriptions
+            switch(key) {
+                case 'account':
+                    element.title = 'Created an account and joined the community!';
+                    break;
+                case 'tutorial':
+                    element.title = 'Mastered the basics by completing the tutorial';
+                    break;
+                case 'campaign':
+                    element.title = 'Conquered the campaign mode';
+                    break;
+                case 'ai':
+                    element.title = 'Defeated all 8 AI opponents';
+                    break;
+            }
+        }
+    });
   });
 </script>
 
