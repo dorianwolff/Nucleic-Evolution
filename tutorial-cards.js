@@ -1,28 +1,36 @@
 // Effect structure : timing, zones affected, condition/requirements, parameter, typeAffected, description
-const cards = [
-    { id: 1, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 2, rawCombat: 6, placement: 1, status: [], cardName: 'Nocturn',
+const tutorialCards = [
+    { id: 1, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 2, rawCombat: 6, placement: 1, status: [], cardName: 'Nocturn',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/0.png' },
+        image: 'Individual_Cards/Tutorial/fronts/00.png' },
 
-    { id: 2, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 5, rawCombat: 3, placement: 1, status: [], cardName: 'Slyde',
+    { id: 2, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 5, rawCombat: 3, placement: 1, status: [], cardName: 'Slyde',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/1.png' },
+        image: 'Individual_Cards/Tutorial/fronts/01.png' },
 
-    { id: 3, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 4, rawCombat: 4, placement: 1, status: [], cardName: 'Shogun',
+    { id: 3, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 4, rawCombat: 4, placement: 1, status: [], cardName: 'Shogun',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/2.png' },
+        image: 'Individual_Cards/Tutorial/fronts/02.png' },
 
-    { id: 4, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 6, rawCombat: 2, placement: 1, status: [], cardName: 'Paladin',
+    { id: 4, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 6, rawCombat: 2, placement: 1, status: [], cardName: 'Paladin',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/3.png' },
+        image: 'Individual_Cards/Tutorial/fronts/03.png' },
 
-    { id: 5, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 5, rawCombat: 3, placement: 1, status: [], cardName: 'Trainee',
+    { id: 5, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 5, rawCombat: 3, placement: 1, status: [], cardName: 'Trainee',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/08.png' },
 
-    { id: 6, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 3, rawCombat: 5, placement: 1, status: [], cardName: 'Apprentice',
+    { id: 6, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 3, rawCombat: 5, placement: 1, status: [], cardName: 'Apprentice',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/09.png' },
+
+    { id: 7, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 4, rawCombat: 4, placement: 1, status: [], cardName: 'Advent',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/04.png' },
+
+    { id: 8, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 8, combat: 0,rawResource: 7, rawCombat: 1, placement: 1, status: [], cardName: 'Sylph',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/05.png' },
 ];
 
-window.cards = cards;
+window.tutorialCards = tutorialCards;

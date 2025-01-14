@@ -668,9 +668,9 @@
                         // Handle card rewards
                         if (stage.rewards.cards) {
                             stage.rewards.cards.forEach((cardFile, i) => {
-                                // Find the card in the cards array
-                                const cardId = parseInt(cardFile.split('.')[0]) + 1; // Assuming filenames match card IDs
-                                const rewardCard = cards.find(card => card.id === cardId);
+                                // Find the card in the tutorialCards array
+                                const cardId = parseInt(cardFile.split('.')[0]) + 1;
+                                const rewardCard = tutorialCards.find(card => card.id === cardId);
                                 
                                 if (rewardCard) {
                                     profileData.cards = profileData.cards || [];
@@ -700,7 +700,7 @@
             const isFirstTime = !localStorage.getItem('tutorialInitialized');
             
             const deckCards = document.getElementById('deck-cards');
-            const starterCard = cards.find(card => card.id === 6); // Get the Apprentice card
+            const starterCard = tutorialCards.find(card => card.id === 6); // Changed from cards to tutorialCards
             
             if (isFirstTime) {
                 // Initialize tutorial progress
@@ -727,7 +727,7 @@
             const card = document.createElement('div');
             card.className = 'deck-card';
             card.style.setProperty('--z-offset', '0px');
-            card.style.backgroundImage = "url('Images/Card_elements/card_back.webp')";
+            card.style.backgroundImage = "url('Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png')";
             
             deckCards.appendChild(card);
             
@@ -782,7 +782,7 @@
             // Remove animation class after it completes
             newCard.addEventListener('animationend', () => {
                 newCard.classList.remove('new-card');
-                newCard.style.backgroundImage = "url('Images/Card_elements/card_back.webp')";
+                newCard.style.backgroundImage = "url('Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png')";
             });
         }
 

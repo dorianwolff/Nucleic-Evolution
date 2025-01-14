@@ -9,6 +9,7 @@
   <script src="effects.js"></script>
   <script src="navbar.js"></script>
   <script src="cards.js"></script>
+  <script src="tutorial-cards.js"></script>
   <style>
     body {
       background-color: #2d3748; /* Dark gray background */
@@ -293,6 +294,12 @@
         <!-- User's decks will be displayed here -->
       </div>
     </div>
+
+    <div class="text-center mb-8">
+        <button id="clear-data" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+            Clear All Data
+        </button>
+    </div>
   </section>
 </div>
 
@@ -314,10 +321,7 @@
 
   function displayProfile(username) {
     document.getElementById('username-display').innerText = username;
-    document.getElementById('profile-section').classList.remove('hidden');
-    document.getElementById('signup-section').classList.add('hidden');
-    document.getElementById('signin-section').classList.add('hidden');
-    document.getElementById('decks-section').classList.remove('hidden');
+    checkLoginState();
     loadUserDecks(username);
   }
 
@@ -404,16 +408,14 @@
 
   document.getElementById('logout-button').addEventListener('click', () => {
     localStorage.removeItem('currentUser');
-    document.getElementById('profile-section').classList.add('hidden');
-    document.getElementById('signup-section').classList.remove('hidden');
-    document.getElementById('signin-section').classList.remove('hidden');
-    document.getElementById('decks-section').classList.add('hidden');
+    checkLoginState();
   });
 
   document.addEventListener('DOMContentLoaded', () => {
+    checkLoginState();
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
-      displayProfile(currentUser);
+        displayProfile(currentUser);
     }
     setupNavbar();
   });
@@ -446,43 +448,59 @@
     // Update existing stats
     document.getElementById('profile-coins').textContent = profileData.coins || 0;
     
-    // Calculate tutorial cards (6 total tutorial cards)
+    // Calculate tutorial cards
     const tutorialCards = profileData.cards || [];
+    console.log(tutorialCards);
     const uniqueTutorialCards = [...new Set(tutorialCards.map(card => card.id))];
     const tutorialCardsCount = uniqueTutorialCards.length;
-    document.getElementById('tutorial-cards-count').textContent = tutorialCardsCount;
-    document.getElementById('tutorial-cards-total').textContent = '6';
+    const totalTutorialCards = window.tutorialCards ? window.tutorialCards.length : 6;
     
-    // Calculate pack cards (total cards from cards.js minus tutorial cards)
+    document.getElementById('tutorial-cards-count').textContent = tutorialCardsCount;
+    document.getElementById('tutorial-cards-total').textContent = totalTutorialCards;
+    
+    // Calculate pack cards
     const packCards = userData.collection || [];
     const uniquePackCards = [...new Set(packCards.map(card => card.id))];
     const packCardsCount = uniquePackCards.length;
-    const totalPackCards = window.cards ? window.cards.filter(card => card.id > 34).length : 0; // Cards after ID 34 are pack cards
+    const totalPackCards = window.cards ? window.cards.filter(card => card.id > 34).length : 0;
+    
     document.getElementById('pack-cards-count').textContent = packCardsCount;
     document.getElementById('pack-cards-total').textContent = totalPackCards;
     
-    // Update total cards count (unique cards only)
+    // Update total cards count
     document.getElementById('profile-cards').textContent = tutorialCardsCount + packCardsCount;
     
     // Display random tutorial card if available
-    if (tutorialCards.length > 0) {
+    const tutorialPreview = document.getElementById('tutorial-card-preview');
+    if (tutorialCards && tutorialCards.length > 0) {
         const randomTutorialCard = tutorialCards[Math.floor(Math.random() * tutorialCards.length)];
-        const tutorialPreview = document.getElementById('tutorial-card-preview');
         tutorialPreview.innerHTML = `
             <img src="${randomTutorialCard.image}" 
-                 alt="${randomTutorialCard.cardName}"
+                 alt="${randomTutorialCard.name}"
                  class="w-full h-full object-contain rounded-lg transform transition-transform hover:scale-110">
+        `;
+    } else {
+        tutorialPreview.innerHTML = `
+            <img src="Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png" 
+                 alt="Card Back"
+                 class="w-full h-full object-contain rounded-lg opacity-50">
         `;
     }
     
     // Display random pack card if available
+    const packPreview = document.getElementById('pack-card-preview');
     if (packCards.length > 0) {
         const randomPackCard = packCards[Math.floor(Math.random() * packCards.length)];
-        const packPreview = document.getElementById('pack-card-preview');
         packPreview.innerHTML = `
             <img src="${randomPackCard.image}" 
                  alt="${randomPackCard.name}"
                  class="w-full h-full object-contain rounded-lg transform transition-transform hover:scale-110">
+        `;
+    } else {
+        packPreview.innerHTML = `
+            <img src="Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png" 
+                 alt="Card Back"
+                 class="w-full h-full object-contain rounded-lg opacity-50">
         `;
     }
     
@@ -550,6 +568,104 @@
         }
     });
   });
+
+  function updateProfileStats() {
+    const currentUser = localStorage.getItem('currentUser');
+    const userData = getUserData(currentUser) || {};
+    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+    
+    // Update existing stats
+    document.getElementById('profile-coins').textContent = profileData.coins || 0;
+    
+    // Calculate tutorial cards
+    const tutorialCards = profileData.cards || [];
+    const uniqueTutorialCards = [...new Set(tutorialCards.map(card => card.id))];
+    const tutorialCardsCount = uniqueTutorialCards.length;
+    const totalTutorialCards = window.tutorialCards ? window.tutorialCards.length : 6;
+    
+    document.getElementById('tutorial-cards-count').textContent = tutorialCardsCount;
+    document.getElementById('tutorial-cards-total').textContent = totalTutorialCards;
+    
+    // Display random tutorial card if available
+    const tutorialPreview = document.getElementById('tutorial-card-preview');
+    if (tutorialCards && tutorialCards.length > 0) {
+        const randomTutorialCard = tutorialCards[Math.floor(Math.random() * tutorialCards.length)];
+        tutorialPreview.innerHTML = `
+            <img src="${randomTutorialCard.image}" 
+                 alt="${randomTutorialCard.name}"
+                 class="w-full h-full object-contain rounded-lg transform transition-transform hover:scale-110">
+        `;
+    } else {
+        tutorialPreview.innerHTML = `
+            <img src="Images/Card_elements/card_back.webp" 
+                 alt="Card Back"
+                 class="w-full h-full object-contain rounded-lg opacity-50">
+        `;
+    }
+    
+    // Rest of the function remains the same...
+  }
+
+  // Add clear data functionality
+  document.getElementById('clear-data').addEventListener('click', () => {
+    if (confirm('Are you sure you want to clear all user data? This action cannot be undone.')) {
+        localStorage.clear();
+        window.location.reload();
+    }
+  });
+
+  // Hide content when not logged in
+  function checkLoginState() {
+    const currentUser = localStorage.getItem('currentUser');
+    const mainContent = document.querySelector('.container');
+    const signupSection = document.getElementById('signup-section');
+    const signinSection = document.getElementById('signin-section');
+    const profileSection = document.getElementById('profile-section');
+    const decksSection = document.getElementById('decks-section');
+    const clearDataButton = document.getElementById('clear-data');
+    const statsContainer = document.querySelector('.stats-container');
+    const collectedCards = document.querySelector('.collected-cards');
+    
+    if (!currentUser) {
+        // Hide all main content
+        profileSection.classList.add('hidden');
+        decksSection.classList.add('hidden');
+        clearDataButton.classList.add('hidden');
+        if (statsContainer) statsContainer.classList.add('hidden');
+        if (collectedCards) collectedCards.classList.add('hidden');
+        
+        // Show only sign up and sign in sections
+        signupSection.classList.remove('hidden');
+        signinSection.classList.remove('hidden');
+    } else {
+        // Show all main content
+        profileSection.classList.remove('hidden');
+        decksSection.classList.remove('hidden');
+        clearDataButton.classList.remove('hidden');
+        if (statsContainer) statsContainer.classList.remove('hidden');
+        if (collectedCards) collectedCards.classList.remove('hidden');
+        
+        // Hide sign up and sign in sections
+        signupSection.classList.add('hidden');
+        signinSection.classList.add('hidden');
+    }
+  }
+
+  function createLoginMessage() {
+    const message = document.createElement('div');
+    message.id = 'login-message';
+    message.className = 'text-center py-16';
+    message.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">Please Log In</h2>
+        <p class="text-gray-400">You need to be logged in to view your profile.</p>
+    `;
+    document.querySelector('main').appendChild(message);
+    return message;
+  }
+
+  // Check login state on page load and after logout
+  document.addEventListener('DOMContentLoaded', checkLoginState);
+  document.addEventListener('logout', checkLoginState);
 </script>
 
 <style>

@@ -366,21 +366,71 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             setupNavbar();
-            const navbarContainer = document.getElementById('navbar-container');
-            fetch('navbar.html')
-                .then(response => response.text())
-                .then(data => {
-                    navbarContainer.innerHTML = data;
-                    // Highlight active link
-                    const currentPath = window.location.pathname.split('/').pop();
-                    document.querySelectorAll('.nav-link').forEach(link => {
-                        if (link.getAttribute('href') === currentPath) {
-                            link.classList.add('active');
-                        }
-                    });
-                    updateCartCount();
-                });
+            checkLoginState();
         });
+
+        function checkLoginState() {
+            const currentUser = localStorage.getItem('currentUser');
+            const gameModes = document.querySelectorAll('.game-mode');
+            
+            gameModes.forEach(mode => {
+                const modeTitle = mode.querySelector('.mode-title')?.textContent.toLowerCase() || '';
+                
+                // Skip the shop mode
+                if (modeTitle.includes('shop')) return;
+                
+                const button = mode.querySelector('.mode-button');
+                
+                if (!currentUser) {
+                    // Disable the mode
+                    mode.classList.add('opacity-50');
+                    mode.style.pointerEvents = 'none';
+                    mode.style.cursor = 'not-allowed';
+                    
+                    if (!mode.querySelector('.login-required')) {
+                        const loginMsg = document.createElement('div');
+                        loginMsg.className = 'login-required text-red-500 text-sm font-bold mt-2';
+                        loginMsg.textContent = 'Login Required';
+                        mode.appendChild(loginMsg);
+                    }
+                    
+                    if (button) {
+                        button.classList.add('opacity-50', 'cursor-not-allowed');
+                        button.disabled = true;
+                        button.textContent = 'Login Required';
+                    }
+                    
+                    // Remove click event
+                    mode.onclick = (e) => e.preventDefault();
+                    
+                } else {
+                    // Enable the mode
+                    mode.classList.remove('opacity-50');
+                    mode.style.pointerEvents = 'auto';
+                    mode.style.cursor = 'pointer';
+                    
+                    // Remove login message if it exists
+                    const loginMsg = mode.querySelector('.login-required');
+                    if (loginMsg) loginMsg.remove();
+                    
+                    if (button) {
+                        button.classList.remove('opacity-50', 'cursor-not-allowed');
+                        button.disabled = false;
+                        button.textContent = modeTitle === 'tutorial' ? 'Start Tutorial' : 
+                                           modeTitle === 'campaign' ? 'Enter Campaign' : 'Battle Now';
+                    }
+                    
+                    // Restore the correct click handler based on the mode
+                    if (modeTitle === 'tutorial') {
+                        mode.onclick = () => window.location.href = 'tutorial.html';
+                    } else if (modeTitle === 'campaign') {
+                        mode.onclick = () => window.location.href = 'in-progress.html';
+                    } else if (modeTitle === 'random battle') {
+                        mode.onclick = () => window.location.href = 'chose-deck.html';
+                    }
+                }
+            });
+        }
 
         function updateCartCount() {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -546,6 +596,10 @@
         document.querySelector('.game-mode:nth-child(1)').addEventListener('click', function() {
             window.location.href = 'tutorial.html';
         });
+
+        // Listen for login/logout events
+        document.addEventListener('login', checkLoginState);
+        document.addEventListener('logout', checkLoginState);
     </script>
 </body>
 </html>
