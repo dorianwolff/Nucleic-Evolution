@@ -18,11 +18,11 @@ const cards = [
 
     { id: 5, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 5, rawCombat: 3, placement: 1, status: [], cardName: 'Trainee',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/4.png' },
+        image: 'Individual_Cards/Tutorial/fronts/08.png' },
 
     { id: 6, name: 'Unit Card', type: 'unit', faction: ['None'], resource: 8, combat: 0,rawResource: 3, rawCombat: 5, placement: 1, status: [], cardName: 'Apprentice',
         effect: [['None']],
-        image: 'Individual_Cards/Tutorial/fronts/5.png' },
+        image: 'Individual_Cards/Tutorial/fronts/09.png' },
 ];
 
 window.cards = cards;
