@@ -299,6 +299,17 @@
     <!-- Decks will be dynamically added here -->
   </div>
   
+  <div class="player-info-container" style="text-align: center; margin: 2rem auto;">
+    <div class="player-info">
+        <h3 id="username" class="text-xl font-bold text-yellow-400"></h3>
+        <p id="deck-name" class="text-gray-300"></p>
+    </div>
+    <div class="ai-info">
+        <h3 id="ai-name" class="text-xl font-bold text-purple-400"></h3>
+        <p id="ai-deck-name" class="text-gray-300"></p>
+    </div>
+  </div>
+  
   <div class="rewards-container">
     <h3 class="rewards-title">Battle Rewards</h3>
     <div class="rewards-grid">
@@ -315,6 +326,10 @@
             <div class="reward-value">Tutorial Complete</div>
         </div>
     </div>
+  </div>
+
+  <div id="confrontation-screen" class="confrontation-screen">
+    <!-- Confrontation screen content will be dynamically added -->
   </div>
 
   <button id="start-tutorial" class="hover:bg-green-600">
@@ -497,18 +512,35 @@
       document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
 
       // Set up the player info
-      const currentUser = localStorage.getItem('currentUser') || 'Player';
-      document.getElementById('username').textContent = currentUser;
-      document.getElementById('deck-name').textContent = stageConfig.playerDeck.name;
-
-      // Set up the AI info
-      document.getElementById('ai-name').textContent = "Tutorial Guide";
-      document.getElementById('ai-deck-name').textContent = stageConfig.aiDeck.name;
+      const usernameElement = document.getElementById('username');
+      const deckNameElement = document.getElementById('deck-name');
+      const aiNameElement = document.getElementById('ai-name');
+      const aiDeckNameElement = document.getElementById('ai-deck-name');
+      
+      if (usernameElement) {
+        const currentUser = localStorage.getItem('currentUser') || 'Player';
+        usernameElement.textContent = currentUser;
+      }
+      
+      if (deckNameElement && stageConfig.playerDeck && stageConfig.playerDeck.name) {
+        deckNameElement.textContent = stageConfig.playerDeck.name;
+      }
+      
+      if (aiNameElement) {
+        aiNameElement.textContent = "Tutorial Guide";
+      }
+      
+      if (aiDeckNameElement && stageConfig.aiDeck && stageConfig.aiDeck.name) {
+        aiDeckNameElement.textContent = stageConfig.aiDeck.name;
+      }
 
       // Show the confrontation screen after a short delay
-      setTimeout(() => {
-          document.getElementById('confrontation-screen').style.display = 'block';
-      }, 100);
+      const confrontationScreen = document.getElementById('confrontation-screen');
+      if (confrontationScreen) {
+        setTimeout(() => {
+          confrontationScreen.style.display = 'block';
+        }, 100);
+      }
 
       // Handle tutorial battle start
       document.getElementById('start-tutorial').addEventListener('click', () => {
@@ -517,11 +549,8 @@
     });
 
     function displayDecks() {
-      console.log('Starting displayDecks function');
       const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
       const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
-      
-      console.log('Retrieved decks:', { tutorialPlayerDeck, tutorialAIDeck });
       
       if (!tutorialPlayerDeck || !tutorialAIDeck) {
           console.error('Decks not found in localStorage');
@@ -533,8 +562,6 @@
           console.error('Decks container not found');
           return;
       }
-      
-      console.log('Found decks container:', decksContainer);
       
       // Make sure the container is visible and positioned correctly
       decksContainer.style.display = 'grid';
@@ -551,8 +578,6 @@
       // Create AI deck card
       const aiDeckElement = createDeckElement(tutorialAIDeck, 'AI Deck');
       decksContainer.appendChild(aiDeckElement);
-      
-      console.log('Decks added to container');
     }
 
     function createDeckElement(deck, title) {
