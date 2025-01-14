@@ -27,6 +27,7 @@
       position: relative;
       padding: 20px;
       margin-top: 2rem;
+      margin-bottom: 2rem;
     }
     .gameplay-screen {
       display: none;
@@ -47,86 +48,456 @@
     }
     #start-tutorial {
       background-color: #1f2937;
-      border: 3px solid #4a5568;
-      border-radius: 12px;
-      padding: 15px 30px;
+      border: 2px solid #4a5568;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1.1rem;
       font-weight: bold;
-      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.3s ease;
+      margin: 2rem auto 3rem;
+      display: block;
     }
     #start-tutorial:hover {
       transform: translateY(-5px);
       border-color: #fbbf24;
       box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
     }
+    .decks-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 80px;
+        padding: 80px;
+        max-width: 1400px;
+        margin: 0 auto;
+        background-color: #1f2937;
+        border-radius: 12px;
+        border: 3px solid #4a5568;
+        position: relative;
+        z-index: 1;
+    }
+
+    .deck-card {
+        background-color: #2d3748;
+        border: 3px solid #4a5568;
+        border-radius: 12px;
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .deck-card[data-deck-type="ai"]:hover {
+        transform: translateY(-5px);
+        border-color: rgba(168, 85, 247, 0.6);
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+    }
+
+    .deck-card[data-deck-type="ai-boss"]:hover {
+        transform: translateY(-5px);
+        border-color: rgba(239, 68, 68, 0.6);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .deck-preview {
+        width: 240px;
+        height: 320px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        background-size: cover;
+        background-position: center;
+        border: 3px solid #4a5568;
+        transition: all 0.3s ease;
+    }
+
+    .deck-card:hover .deck-preview {
+        transform: scale(1.05);
+        border-color: #fbbf24;
+    }
+
+    .deck-info {
+        text-align: center;
+    }
+
+    .deck-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #fbbf24;
+        margin-bottom: 5px;
+    }
+
+    .deck-stats {
+        color: #d1d5db;
+        font-size: 0.9rem;
+    }
+
+    .deck-preview.star-card {
+        width: 180px;
+        height: 240px;
+        margin-bottom: 20px;
+        border: 3px solid #fbbf24;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+    }
+
+    .cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin: 15px 0;
+        max-width: 300px;
+    }
+
+    .mini-card {
+        width: 80px;
+        height: 120px;
+        background-size: cover;
+        background-position: center;
+        border: 2px solid #4a5568;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .mini-card:hover {
+        transform: scale(1.1);
+        border-color: #fbbf24;
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+
+    .deck-card {
+        min-height: auto;
+        padding: 30px;
+    }
+
+    .stage-title-container {
+        text-align: center;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        background-color: #1f2937;
+        border-radius: 12px;
+        max-width: 1200px;
+        margin: 40px auto;
+        border: 3px solid #4a5568;
+    }
+
+    .stage-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fbbf24;
+        margin-bottom: 1rem;
+    }
+
+    .stage-description {
+        color: #d1d5db;
+        font-size: 1.2rem;
+    }
+
+    .rewards-container {
+        text-align: center;
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 800px;
+        background-color: #1f2937;
+        border-radius: 12px;
+        border: 3px solid #4a5568;
+    }
+
+    .rewards-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fbbf24;
+        margin-bottom: 1rem;
+    }
+
+    .rewards-grid {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .reward-item {
+        background-color: #2d3748;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 2px solid #4a5568;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+    }
+
+    .reward-item:hover {
+        transform: translateY(-3px);
+        border-color: #fbbf24;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+    }
+
+    .reward-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .reward-value {
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+
+    /* Update the deck card hover styles */
+    .deck-card[data-deck-type="player"]:hover {
+        transform: translateY(-5px);
+        border-color: #fbbf24;
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+
+    /* Update the mini-card hover effects for AI deck */
+    .deck-card[data-deck-type="ai"] .mini-card:hover {
+        transform: scale(1.1);
+        border-color: rgba(168, 85, 247, 0.6);
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+    }
+
+    .deck-card[data-deck-type="ai-boss"] .mini-card:hover {
+        transform: scale(1.1);
+        border-color: rgba(239, 68, 68, 0.6);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Update the star card styles to handle AI deck colors */
+    .deck-card[data-deck-type="player"] .deck-preview.star-card {
+        border: 3px solid #fbbf24;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+    }
+
+    .deck-card[data-deck-type="ai"] .deck-preview.star-card {
+        border: 3px solid rgba(168, 85, 247, 0.6);  /* Purple border */
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);  /* Purple glow */
+    }
+
+    .deck-card[data-deck-type="ai-boss"] .deck-preview.star-card {
+        border: 3px solid rgba(239, 68, 68, 0.6);  /* Red border */
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);  /* Red glow */
+    }
   </style>
 </head>
 <body>
   <div id="navbar-container"></div>
-
-  <div id="confrontation-screen" class="confrontation-screen">
-    <div class="tutorial-message">
-      <h2 class="text-xl font-bold mb-4" id="tutorial-stage-title">Tutorial Stage</h2>
-      <p id="tutorial-stage-description" class="mb-4">Stage description will appear here...</p>
-    </div>
-
-    <!-- Rest of the confrontation screen content -->
-    <div class="flex justify-center items-center space-x-20 mt-10">
-      <div class="text-center">
-        <h3 id="username" class="text-xl font-bold mb-2"></h3>
-        <p id="deck-name" class="text-gray-400"></p>
-        <img id="user-deck-image" class="w-64 h-96 object-cover rounded-lg mt-4" src="" alt="User Deck">
-      </div>
-      <div class="text-center">
-        <h3 id="ai-name" class="text-xl font-bold mb-2"></h3>
-        <p id="ai-deck-name" class="text-gray-400"></p>
-        <img id="ai-deck-image" class="w-64 h-96 object-cover rounded-lg mt-4" src="" alt="AI Deck">
-      </div>
-    </div>
-
-    <button id="start-tutorial" class="mt-8 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-      Start Tutorial Battle
-    </button>
+  
+  <div class="stage-title-container">
+    <h2 class="stage-title" id="tutorial-stage-title">Basic Combat</h2>
+    <p class="stage-description" id="tutorial-stage-description">Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.</p>
   </div>
+  
+  <div class="decks-container">
+    <!-- Decks will be dynamically added here -->
+  </div>
+  
+  <div class="rewards-container">
+    <h3 class="rewards-title">Battle Rewards</h3>
+    <div class="rewards-grid">
+        <div class="reward-item">
+            <div class="reward-icon">💰</div>
+            <div class="reward-value">100 Coins</div>
+        </div>
+        <div class="reward-item">
+            <div class="reward-icon">🎴</div>
+            <div class="reward-value">New Card</div>
+        </div>
+        <div class="reward-item">
+            <div class="reward-icon">📜</div>
+            <div class="reward-value">Tutorial Complete</div>
+        </div>
+    </div>
+  </div>
+
+  <button id="start-tutorial" class="hover:bg-green-600">
+    Start Tutorial Battle
+  </button>
 
   <script>
     // Tutorial stage configurations
     const tutorialStages = [
       {
         title: "Basic Combat",
-        description: "Learn the basic combatrules of the game. We'll start with a simple deck focused on combat.",
+        description: "Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.",
         aiDeck: {
           name: "Tutorial Deck 1",
+          starCard: tutorialCards.find(card => card.id === 1),
           cards: [
-            // Add specific card IDs from tutorial-cards.js
-            // Example: tutorialCards.find(card => card.id === 101)
             tutorialCards.find(card => card.id === 1),
             tutorialCards.find(card => card.id === 2),
             tutorialCards.find(card => card.id === 3)
           ]
         },
-        playerDeck: {
-          name: "Starter Deck",
-          cards: [
-            tutorialCards.find(card => card.id === 4),
-            tutorialCards.find(card => card.id === 5),
-            tutorialCards.find(card => card.id === 6)
-          ]
-        }
+        playerDeck: JSON.parse(localStorage.getItem('tutorialDeck'))
       },
       // Add more stages here...
     ];
 
+    // Add the stages configuration at the top of your script section
+    const stages = [
+      { 
+        x: 900, y: 400, 
+        label: "Units", 
+        rewards: {
+          cards: ['10.png', '11.png']
+        }
+      },
+      { 
+        x: 1200, y: 600, 
+        label: "Lands", 
+        rewards: {
+          cards: ['12.png', '13.png']
+        }
+      },
+      { 
+        x: 1500, y: 300, 
+        label: "Power-Ups", 
+        rewards: {
+          cards: ['14.png', '15.png']
+        }
+      },
+      { 
+        x: 1800, y: 700, 
+        label: "Civilisations",
+        rewards: {
+          cards: ['08.png', '02.png']
+        }
+      },
+      { 
+        x: 2100, y: 200, 
+        label: "Combat basics",
+        rewards: {
+          coins: 100
+        }
+      },
+      { 
+        x: 2400, y: 500, 
+        label: "Effects",
+        rewards: {
+          cards: ['01.png', '02.png']
+        }
+      },
+      { 
+        x: 2600, y: 800, 
+        label: "Deck Building",
+        rewards: {
+          cards: ['01.png', '02.png']
+        }
+      },
+      { 
+        x: 2800, y: 300, 
+        label: "Strategy Basics",
+        rewards: {
+          coins: 100
+        }
+      },
+      { 
+        x: 3000, y: 600, 
+        label: "Advanced Tactics",
+        rewards: {
+          cards: ['01.png', '02.png']
+        }
+      },
+      { 
+        x: 3200, y: 400, 
+        label: "Final Challenge",
+        rewards: {
+          cards: ['01.png'],
+          coins: 500
+        }
+      }
+    ];
+
     document.addEventListener('DOMContentLoaded', () => {
       setupNavbar();
+      
+      // First set up the stage and store decks
       const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
       const stageConfig = tutorialStages[selectedStage];
-
-      // Set up the tutorial stage
+      
+      // Get the stage rewards from the stages configuration
+      const stageRewards = stages[selectedStage].rewards;
+      
+      // Update the rewards display
+      const rewardsContainer = document.querySelector('.rewards-grid');
+      rewardsContainer.innerHTML = '';  // Clear existing rewards
+      
+      // Add coins reward if present
+      if (stageRewards.coins) {
+        const coinReward = document.createElement('div');
+        coinReward.className = 'reward-item';
+        coinReward.innerHTML = `
+          <div class="reward-icon">
+            <img src="Images/heads_coin.png" alt="Coins" class="coin-icon" style="width: 30px; height: 30px;">
+          </div>
+          <div class="reward-value">${stageRewards.coins} Coins</div>
+        `;
+        rewardsContainer.appendChild(coinReward);
+      }
+      
+      // Add card rewards if present
+      if (stageRewards.cards) {
+        stageRewards.cards.forEach(cardFile => {
+          const cardReward = document.createElement('div');
+          cardReward.className = 'reward-item';
+          cardReward.innerHTML = `
+            <div class="reward-icon">
+              <img src="Individual_Cards/Tutorial/fronts/${cardFile}" 
+                   alt="Card Reward" 
+                   class="reward-card" 
+                   style="width: 60px; height: 90px; border-radius: 6px; transition: transform 0.2s ease;">
+            </div>
+            <div class="reward-value">New Card</div>
+          `;
+          
+          // Add hover effect for the card image
+          const cardImage = cardReward.querySelector('.reward-card');
+          cardImage.addEventListener('mouseover', () => {
+            cardImage.style.transform = 'scale(1.5)';
+            cardImage.style.zIndex = '11';
+          });
+          cardImage.addEventListener('mouseout', () => {
+            cardImage.style.transform = 'scale(1)';
+            cardImage.style.zIndex = '1';
+          });
+          
+          rewardsContainer.appendChild(cardReward);
+        });
+      }
+      
+      // Get the player's deck from localStorage
+      const playerDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
+      if (!playerDeck) {
+          console.error('Player deck not found in localStorage');
+          return;
+      }
+      
+      // Make sure the player deck has a star card (first card in deck)
+      if (playerDeck.cards && playerDeck.cards.length > 0) {
+          playerDeck.starCard = playerDeck.cards[0];
+      }
+      
+      // Store the decks
+      localStorage.setItem('tutorialAIDeck', JSON.stringify(stageConfig.aiDeck));
+      localStorage.setItem('tutorialPlayerDeck', JSON.stringify(playerDeck));
+      
+      // Then display the decks
+      displayDecks();
+      
+      // Set up the rest of the UI
       document.getElementById('tutorial-stage-title').textContent = stageConfig.title;
       document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
 
       // Set up the player info
-      const currentUser = localStorage.getItem('username') || 'Player';
+      const currentUser = localStorage.getItem('currentUser') || 'Player';
       document.getElementById('username').textContent = currentUser;
       document.getElementById('deck-name').textContent = stageConfig.playerDeck.name;
 
@@ -134,19 +505,97 @@
       document.getElementById('ai-name').textContent = "Tutorial Guide";
       document.getElementById('ai-deck-name').textContent = stageConfig.aiDeck.name;
 
-      // Show the confrontation screen
-      document.getElementById('confrontation-screen').style.display = 'block';
+      // Show the confrontation screen after a short delay
+      setTimeout(() => {
+          document.getElementById('confrontation-screen').style.display = 'block';
+      }, 100);
 
       // Handle tutorial battle start
       document.getElementById('start-tutorial').addEventListener('click', () => {
-        // Store the decks for the battle
-        localStorage.setItem('tutorialAIDeck', JSON.stringify(stageConfig.aiDeck));
-        localStorage.setItem('tutorialPlayerDeck', JSON.stringify(stageConfig.playerDeck));
-        
-        // Redirect to the game
-        window.location.href = 'tutorial-ingame.html';
+          window.location.href = 'tutorial-ingame.html';
       });
     });
+
+    function displayDecks() {
+      console.log('Starting displayDecks function');
+      const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
+      const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
+      
+      console.log('Retrieved decks:', { tutorialPlayerDeck, tutorialAIDeck });
+      
+      if (!tutorialPlayerDeck || !tutorialAIDeck) {
+          console.error('Decks not found in localStorage');
+          return;
+      }
+      
+      const decksContainer = document.querySelector('.decks-container');
+      if (!decksContainer) {
+          console.error('Decks container not found');
+          return;
+      }
+      
+      console.log('Found decks container:', decksContainer);
+      
+      // Make sure the container is visible and positioned correctly
+      decksContainer.style.display = 'grid';
+      decksContainer.style.opacity = '1';
+      decksContainer.style.visibility = 'visible';
+      
+      // Clear existing content
+      decksContainer.innerHTML = '';
+      
+      // Create player deck card
+      const playerDeckElement = createDeckElement(tutorialPlayerDeck, 'Your Deck');
+      decksContainer.appendChild(playerDeckElement);
+      
+      // Create AI deck card
+      const aiDeckElement = createDeckElement(tutorialAIDeck, 'AI Deck');
+      decksContainer.appendChild(aiDeckElement);
+      
+      console.log('Decks added to container');
+    }
+
+    function createDeckElement(deck, title) {
+        const deckElement = document.createElement('div');
+        deckElement.className = 'deck-card';
+        
+        // Set deck type for proper hover effects
+        if (title === 'AI Deck') {
+            deckElement.setAttribute('data-deck-type', 'ai');
+            if (deck.isBoss) {
+                deckElement.setAttribute('data-deck-type', 'ai-boss');
+            }
+        } else {
+            deckElement.setAttribute('data-deck-type', 'player');
+        }
+        
+        // Create star card preview
+        const starCardPreview = document.createElement('div');
+        starCardPreview.className = 'deck-preview star-card';
+        starCardPreview.style.backgroundImage = `url('${deck.starCard.image}')`;
+        
+        // Create cards container
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'cards-container';
+        
+        // Add all deck cards
+        deck.cards.forEach(card => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'mini-card';
+            cardElement.style.backgroundImage = `url('${card.image}')`;
+            cardsContainer.appendChild(cardElement);
+        });
+        
+        const deckInfo = document.createElement('div');
+        deckInfo.className = 'deck-info';
+        deckInfo.innerHTML = `<div class="deck-stats">Cards: ${deck.cards.length}</div>`;
+        
+        deckElement.appendChild(starCardPreview);
+        deckElement.appendChild(cardsContainer);
+        deckElement.appendChild(deckInfo);
+        
+        return deckElement;
+    }
   </script>
 </body>
 </html> 
