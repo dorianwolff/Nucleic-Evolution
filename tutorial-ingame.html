@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="effects.css">
     <script src="effects.js"></script>
     <script src="tutorial-cards.js"></script>
+    <script src="tutorial.js"></script>
     <style>
         /* Copy all styles from ingame.html */
         body {
@@ -28,10 +29,9 @@
             grid-template-rows: 1fr 1fr;
             gap: 10px;
             padding: 10px;
-            height: 70%;
+            height: 80vh;
             width: 80%;
-            margin-top: 10px;
-            margin-bottom: 40px;
+            margin: auto;
             overflow: visible;
             position: relative;
         }
@@ -60,10 +60,13 @@
             background-color: #1f2937;
             border: 2px solid #4a5568;
             border-radius: 8px;
-            position: absolute;
-            cursor: pointer;
+            cursor: default;
             transition: transform 0.3s ease, border-color 0.3s ease;
-            transform-origin: center bottom;
+            transform-origin: center;
+        }
+
+        .card.draggable {
+            cursor: grab;
         }
 
         .card.dragging {
@@ -93,10 +96,37 @@
         .tutorial-highlight {
             position: absolute;
             border: 3px solid #fbbf24;
-            border-radius: 8px;
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
             pointer-events: none;
-            z-index: 999;
+            z-index: 1000;
+            border-radius: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .highlight-stats {
+            animation: pulse 2s infinite;
+            border-color: #fbbf24;
+        }
+
+        .attack-arrow {
+            position: absolute;
+            width: 2px;
+            height: 50px;
+            background: #fbbf24;
+            transform-origin: top;
+            animation: arrowPulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        @keyframes arrowPulse {
+            0% { transform: scaleY(0.8); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+            100% { transform: scaleY(0.8); opacity: 0.5; }
         }
 
         .tutorial-message {
@@ -156,209 +186,48 @@
             max-width: 600px;
             text-align: center;
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Update styles */
+        .tutorial-card-container {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
 <body>
-    <!-- Add turn indicator -->
-    <div class="turn-indicator">
-        Current Turn: <span id="current-turn">Player</span>
+    <div id="tutorial-dialogue" class="tutorial-dialogue">
+        Welcome to the tutorial!
     </div>
 
-    <!-- Add resource counters -->
     <div class="resource-counter ai-resources">
         AI Resources: <span id="ai-resources">3</span>
-    </div>
-    <div class="resource-counter player-resources">
-        Your Resources: <span id="player-resources">3</span>
-    </div>
-
-    <!-- Add tutorial dialogue box -->
-    <div class="tutorial-dialogue" id="tutorial-dialogue">
-        Welcome to the tutorial! Let's learn how to play.
     </div>
 
     <div class="game-area">
         <!-- AI zones -->
-        <div class="zone ai-zone" data-zone="ai-left"></div>
-        <div class="zone ai-zone" data-zone="ai-center"></div>
-        <div class="zone ai-zone" data-zone="ai-right"></div>
-
+        <div class="zone ai-zone" id="ai-left"></div>
+        <div class="zone ai-zone" id="ai-center"></div>
+        <div class="zone ai-zone" id="ai-right"></div>
+        
         <!-- Player zones -->
-        <div class="zone player-zone" data-zone="player-left"></div>
-        <div class="zone player-zone" data-zone="player-center"></div>
-        <div class="zone player-zone" data-zone="player-right"></div>
+        <div class="zone player-zone" id="player-left"></div>
+        <div class="zone player-zone" id="player-center"></div>
+        <div class="zone player-zone" id="player-right"></div>
     </div>
 
-    <!-- Player's hand -->
-    <div class="hand-area">
-        <div class="user-hand"></div>
+    <!-- Tutorial card container -->
+    <div class="tutorial-card-container"></div>
+
+    <div class="resource-counter player-resources">
+        Your Resources: <span id="player-resources">3</span>
     </div>
 
-    <script>
-        // Global variables
-        let draggedCard = null;
-        let currentStep = 0;
-
-        // Tutorial steps configuration
-        const tutorialSteps = [
-            {
-                message: "Welcome to the tutorial! Let's learn how to play Nucleic Evolution.",
-                highlight: '.user-hand'
-            },
-            {
-                message: "These are your cards. You can drag them to play them on the field.",
-                highlight: '.card'
-            },
-            {
-                message: "Drag a card to one of your zones to play it.",
-                highlight: '.user-zone'
-            },
-            {
-                message: "Each card has attack and defense values. Use them wisely!",
-                highlight: '.card-stats'
-            },
-            {
-                message: "Your opponent will play their cards in response.",
-                highlight: '.ai-zone'
-            }
-            // Add more tutorial steps as needed
-        ];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load the tutorial decks
-            const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
-            const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
-            
-            function showTutorialStep() {
-                const step = tutorialSteps[currentStep];
-                
-                // Create or update tutorial overlay
-                let overlay = document.querySelector('.tutorial-overlay');
-                if (!overlay) {
-                    overlay = document.createElement('div');
-                    overlay.className = 'tutorial-overlay';
-                    document.body.appendChild(overlay);
-                }
-
-                overlay.innerHTML = `
-                    <div class="tutorial-message">
-                        <p class="mb-4">${step.message}</p>
-                        <button class="px-4 py-2 bg-green-600 rounded hover:bg-green-700" 
-                                onclick="nextTutorialStep()">
-                            Next
-                        </button>
-                    </div>
-                `;
-
-                // Add highlight if specified
-                if (step.highlight) {
-                    const element = document.querySelector(step.highlight);
-                    if (element) {
-                        const rect = element.getBoundingClientRect();
-                        const highlight = document.createElement('div');
-                        highlight.className = 'tutorial-highlight';
-                        highlight.style.left = `${rect.left - 5}px`;
-                        highlight.style.top = `${rect.top - 5}px`;
-                        highlight.style.width = `${rect.width + 10}px`;
-                        highlight.style.height = `${rect.height + 10}px`;
-                        document.body.appendChild(highlight);
-                    }
-                }
-            }
-
-            // Make nextTutorialStep globally available
-            window.nextTutorialStep = function() {
-                const highlight = document.querySelector('.tutorial-highlight');
-                if (highlight) highlight.remove();
-
-                currentStep++;
-                if (currentStep < tutorialSteps.length) {
-                    showTutorialStep();
-                } else {
-                    document.querySelector('.tutorial-overlay').remove();
-                }
-            };
-
-            // Initialize game area
-            const gameArea = document.querySelector('.game-area');
-            
-            // Add event listeners for drag and drop
-            document.addEventListener('mousedown', handleDragStart);
-            document.addEventListener('mousemove', handleDragMove);
-            document.addEventListener('mouseup', handleDragEnd);
-            document.addEventListener('touchstart', handleTouchStart, { passive: false });
-            document.addEventListener('touchmove', handleTouchMove, { passive: false });
-            document.addEventListener('touchend', handleTouchEnd);
-
-            // Initialize the game and tutorial
-            showTutorialStep();
-            initializeGame();
-        });
-
-        // Add drag and drop handler functions
-        let draggedCard = null;
-
-        function handleDragStart(e) {
-            if (e.target.classList.contains('card')) {
-                draggedCard = e.target;
-                draggedCard.classList.add('dragging');
-                draggedCard.classList.add('dragging-source');
-                
-                draggedCard.style.position = 'fixed';
-                draggedCard.style.left = `${e.clientX}px`;
-                draggedCard.style.top = `${e.clientY}px`;
-                draggedCard.style.transform = 'translate(-50%, -50%)';
-            }
-        }
-
-        function initializeGame() {
-            // Set up initial game state
-            let playerResources = 3;
-            let aiResources = 3;
-            let currentTurn = 'player';
-
-            // Update UI
-            document.getElementById('player-resources').textContent = playerResources;
-            document.getElementById('ai-resources').textContent = aiResources;
-            document.getElementById('current-turn').textContent = 
-                currentTurn === 'player' ? 'Your Turn' : 'AI Turn';
-
-            // Load and create cards
-            const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
-            const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
-
-            // Create card elements and add them to the appropriate zones
-            tutorialPlayerDeck.cards.forEach(card => {
-                const cardElement = createCardElement(card);
-                // Add to player's hand
-                document.querySelector('.user-hand').appendChild(cardElement);
-            });
-        }
-
-        function createCardElement(card) {
-            const cardElement = document.createElement('div');
-            cardElement.className = 'card';
-            cardElement.dataset.cardId = card.id;
-            cardElement.innerHTML = `
-                <div class="card-content">
-                    <img src="${card.image}" alt="${card.name}" class="card-image">
-                    <div class="card-stats">
-                        <span class="attack">${card.attack}</span>
-                        <span class="defense">${card.defense}</span>
-                    </div>
-                    <div class="card-name">${card.name}</div>
-                </div>
-            `;
-            return cardElement;
-        }
-
-        // Update tutorial dialogue
-        function updateTutorialDialogue(message) {
-            document.getElementById('tutorial-dialogue').textContent = message;
-        }
-
-        // Rest of your existing code...
-    </script>
+    <div id="current-turn" class="turn-indicator">Your Turn</div>
 </body>
 </html> 
