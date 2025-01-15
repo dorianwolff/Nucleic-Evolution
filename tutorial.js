@@ -44,13 +44,19 @@ const tutorialConfigs = {
                 requiredAction: null
             },
             {
-                message: "This is a basic unit card. Notice its raw combat value.",
+                message: "This is a basic unit card.",
+                highlight: '.card',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "Notice its raw combat value. This is what your unit uses to fight!",
                 highlight: '.card',
                 action: 'highlightStats',
                 requiredAction: null
             },
             {
-                message: "As well as its raw resource value.",
+                message: "As well as its raw resource value, these are the resources you need to win the game!",
                 highlight: '.card',
                 action: 'highlightStats',
                 requiredAction: null
@@ -62,7 +68,19 @@ const tutorialConfigs = {
                 requiredAction: 'placeCard'
             },
             {
-                message: "Prepare for battle!",
+                message: "Prepare for confrontation!",
+                highlight: '.card',
+                action: 'toBeDone',
+                requiredAction: null
+            },
+            {
+                message: "Uh oh, it seems like your opponent sees you as a joke...",
+                highlight: '.card',
+                action: 'toBeDone',
+                requiredAction: null
+            },
+            {
+                message: "You better leave them a lasting impression!",
                 highlight: '.card',
                 action: 'toBeDone',
                 requiredAction: null
