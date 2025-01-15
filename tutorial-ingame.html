@@ -34,6 +34,7 @@
             margin: auto;
             overflow: visible;
             position: relative;
+            z-index: 1;
         }
 
         .zone {
@@ -305,18 +306,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            gap: 10px;
+            padding: 5px;
             position: relative;
-            margin: 5px 0;
+            z-index: auto;
         }
 
         /* Add or update these styles in your existing CSS */
         .placed-card {
-            width: 82.5px;  /* Match ingame.html size */
+            width: 82.5px;
             height: 112.5px;
             background-size: cover;
-            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, z-index 0.2s ease;
+            transition: all 0.2s ease;
             position: relative;
-            z-index: 15;
+            z-index: 1;
         }
         
         .row {
@@ -466,17 +469,18 @@
 
         /* Update placed card styles */
         .placed-card {
-            width: 82.5px;  /* Match ingame.html size */
+            width: 82.5px;
             height: 112.5px;
             background-size: cover;
-            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, z-index 0.2s ease;
+            transition: transform 0.2s ease;
             position: relative;
-            z-index: 15;
+            z-index: 1;
         }
 
         .placed-card:hover {
             transform: scale(2.5);
-            z-index: 20;
+            position: relative;
+            z-index: 9999;
         }
 
         /* Update circle styles to match ingame.html */
@@ -521,6 +525,34 @@
                 height: 23px;
                 font-size: 15px;
             }
+        }
+
+        /* Add these new styles */
+        .row {
+            position: relative;
+            z-index: inherit;
+        }
+
+        .row:hover {
+            z-index: inherit;
+        }
+
+        /* Remove any other z-index inheritance */
+        .ai-zone, .player-zone {
+            z-index: auto;
+        }
+
+        /* Add this to ensure proper stacking for game elements */
+        .tutorial-dialogue {
+            z-index: 10000;
+        }
+
+        .resource-counter {
+            z-index: 10000;
+        }
+
+        .turn-indicator {
+            z-index: 10000;
         }
     </style>
 </head>

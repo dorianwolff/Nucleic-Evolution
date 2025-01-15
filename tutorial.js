@@ -69,14 +69,14 @@ const tutorialConfigs = {
             },
             {
                 message: "Prepare for confrontation!",
-                highlight: '.card',
-                action: 'toBeDone',
+                highlight: '.ai-zone',
+                action: null,
                 requiredAction: null
             },
             {
                 message: "Uh oh, it seems like your opponent sees you as a joke...",
                 highlight: '.card',
-                action: 'toBeDone',
+                action: 'playAICard',
                 requiredAction: null
             },
             {
@@ -205,12 +205,13 @@ function showCurrentStep() {
 }
 
 function executeTutorialAction(action) {
+    const currentStep = gameState.tutorialSteps[gameState.tutorialStep];
+    
     switch (action) {
         case 'showHand':
             renderPlayerHand();
             break;
         case 'highlightStats':
-            const currentStep = gameState.tutorialSteps[gameState.tutorialStep];
             if (currentStep.message.includes('combat value')) {
                 highlightCombatStats();
             } else if (currentStep.message.includes('resource value')) {
@@ -226,6 +227,9 @@ function executeTutorialAction(action) {
             break;
         case 'showAttackPath':
             showAttackPatterns();
+            break;
+        case 'playAICard':
+            playOpponentStarCard();
             break;
     }
 }
@@ -356,7 +360,6 @@ function createCardElement(cardData) {
     
     card.appendChild(statsContainer);
     
-    console.log('Created card element with data:', JSON.parse(card.dataset.cardData));
     return card;
 }
 
@@ -421,7 +424,6 @@ function enableDragAndDrop(card) {
 // Add this helper function
 function getTutorialCardData(element) {
     const cardId = parseInt(element.dataset.cardId);
-    console.log('Getting data for card ID:', cardId);
     
     // Find the card in tutorialCards array
     const tutorialCard = window.tutorialCards.find(card => card.id === cardId);
@@ -449,7 +451,6 @@ function getTutorialCardData(element) {
 
 function handleDragStart(e) {
     if (!e.target.classList.contains('draggable')) return;
-    console.log('Drag start:', e.target);
     
     gameState.draggedCard = e.target;
     
@@ -471,7 +472,6 @@ function handleDragStart(e) {
             e.dataTransfer.setData('application/json', jsonData);
             e.dataTransfer.setData('text/plain', jsonData);
             gameState.draggedCard.dataset.cardData = jsonData;
-            console.log('Card data set:', cardData);
         } catch (error) {
             console.error('Error in drag start:', error);
         }
@@ -505,7 +505,6 @@ function handleTouchStart(e) {
     const cardData = getTutorialCardData(e.target);
     if (cardData) {
         gameState.draggedCard.dataset.cardData = JSON.stringify(cardData);
-        console.log('Touch card data set:', cardData);
     }
 }
 
@@ -661,7 +660,6 @@ function highlightResourceStats() {
 // Update the drag and drop functionality
 function setupDragAndDrop() {
     const cards = document.querySelectorAll('.card.draggable');
-    console.log('Setting up drag and drop for cards:', cards.length);
     
     cards.forEach(card => {
         // Remove existing listeners first to prevent duplicates
@@ -677,8 +675,6 @@ function setupDragAndDrop() {
         card.addEventListener('touchstart', handleTouchStart);
         card.addEventListener('touchmove', handleTouchMove);
         card.addEventListener('touchend', handleTouchEnd);
-        
-        console.log('Card data:', card.dataset.cardData);
     });
 
     const playerZones = document.querySelectorAll('.player-zone');
@@ -698,10 +694,8 @@ function setupDragAndDrop() {
 function handleDragOver(e) {
     e.preventDefault();
     const zone = e.currentTarget;
-    console.log('Dragging over zone:', zone.id);
     
     if (!zone.classList.contains('player-zone')) {
-        console.log('Not a player zone, preventing drop');
         e.dataTransfer.dropEffect = 'none';
         return;
     }
@@ -711,9 +705,7 @@ function handleDragOver(e) {
         // Try both MIME types
         const jsonData = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
         cardData = JSON.parse(jsonData);
-        console.log('Successfully got card data in dragOver:', cardData);
     } catch (error) {
-        console.log('Using fallback card data from gameState');
         if (gameState.draggedCard) {
             try {
                 cardData = JSON.parse(gameState.draggedCard.dataset.cardData);
@@ -744,11 +736,9 @@ function handleDragLeave(e) {
 function handleDrop(e) {
     e.preventDefault();
     const zone = e.currentTarget;
-    console.log('Drop event on zone:', zone.id);
     zone.classList.remove('highlight');
     
     if (!zone.classList.contains('player-zone')) {
-        console.log('Not a player zone, canceling drop');
         return;
     }
     
@@ -756,19 +746,15 @@ function handleDrop(e) {
     let cardData;
     try {
         cardData = JSON.parse(e.dataTransfer.getData('text/plain'));
-        console.log('Successfully parsed card data:', cardData);
     } catch (error) {
-        console.log('Error getting card data from dataTransfer, trying element data');
         if (gameState.draggedCard && gameState.draggedCard.dataset.cardData) {
             try {
                 cardData = JSON.parse(gameState.draggedCard.dataset.cardData);
-                console.log('Successfully parsed card data from element:', cardData);
             } catch (innerError) {
                 console.error('Error parsing card data from element:', innerError);
                 return;
             }
         } else {
-            console.log('No dragged card in gameState, canceling drop');
             return;
         }
     }
@@ -804,14 +790,12 @@ function handleDrop(e) {
     
     // Remove the original card
     if (gameState.draggedCard) {
-        console.log('Removing original card');
         gameState.draggedCard.remove();
     }
     
     // Update game state
     const zoneId = zone.id;
     gameState.playerZones[zoneId] = cardData.id;
-    console.log('Updated game state:', gameState.playerZones);
     
     // Check tutorial completion
     checkStepCompletion('placeCard');
@@ -867,8 +851,6 @@ function initializeCardContainer() {
     
     // Set up drag and drop
     setupDragAndDrop();
-    
-    console.log('Card container initialized with card:', tutorialCard);
 }
 
 // Call this in your initialization code
@@ -877,3 +859,83 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCardContainer();
     // ... rest of your initialization code
 });
+
+// Add this new function to handle playing the opponent's star card
+function playOpponentStarCard() {
+    // Get the AI deck data
+    const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
+    if (!tutorialAIDeck || !tutorialAIDeck.starCard) {
+        console.error('AI deck or star card not found');
+        return;
+    }
+
+    // Find which zone the player's card is in
+    let playerZoneId = null;
+    for (const [zoneId, cardId] of Object.entries(gameState.playerZones)) {
+        if (cardId !== null) {
+            playerZoneId = zoneId;
+            break;
+        }
+    }
+
+    if (!playerZoneId) {
+        console.error('No player card found in zones');
+        return;
+    }
+
+    // Map player zone to AI zone
+    const zoneMap = {
+        'player-left': 'ai-left',
+        'player-center': 'ai-center',
+        'player-right': 'ai-right'
+    };
+
+    const aiZoneId = zoneMap[playerZoneId];
+    const aiZone = document.getElementById(aiZoneId);
+    
+    if (!aiZone) {
+        console.error('AI zone not found');
+        return;
+    }
+
+    // Create and add the AI card with a delay
+    setTimeout(() => {
+        const placedCard = document.createElement('div');
+        placedCard.className = 'placed-card';
+        placedCard.style.backgroundImage = `url('${tutorialAIDeck.starCard.image}')`;
+        
+        // Add combat circle
+        const combatCircle = document.createElement('div');
+        combatCircle.className = 'combat-circle';
+        combatCircle.textContent = tutorialAIDeck.starCard.rawCombat;
+        placedCard.appendChild(combatCircle);
+        
+        // Add resource circle
+        const resourceCircle = document.createElement('div');
+        resourceCircle.className = 'resource-circle';
+        resourceCircle.textContent = tutorialAIDeck.starCard.rawResource;
+        placedCard.appendChild(resourceCircle);
+        
+        // Find or create the unit row
+        let row = aiZone.querySelector('.row[data-type="unit"]');
+        if (!row) {
+            row = document.createElement('div');
+            row.className = 'row';
+            row.dataset.type = 'unit';
+            aiZone.appendChild(row);
+        }
+        
+        // Add the card to the zone
+        row.appendChild(placedCard);
+        
+        // Update game state
+        gameState.aiZones[aiZoneId] = tutorialAIDeck.starCard.id;
+    }, 1500); // Delay the card placement
+
+    // Add a click handler to progress to the next step
+    document.addEventListener('click', function progressHandler() {
+        // Remove this event listener to prevent multiple triggers
+        document.removeEventListener('click', progressHandler);
+        nextTutorialStep();
+    }, { once: true }); // Using once: true as an alternative way to ensure one-time execution
+}
