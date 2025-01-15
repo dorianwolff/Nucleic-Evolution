@@ -43,26 +43,40 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             position: relative;
             min-height: 250px;
             transition: border-color 0.3s ease;
+            padding: 10px;
+            z-index: 1;
         }
 
         .zone.highlight {
             border-color: #fbbf24;
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            z-index: 1;
         }
 
         .card {
-            width: 120px;
-            height: 180px;
+            width: 240px;
+            height: 340px;
             background-color: #1f2937;
-            border: 2px solid #4a5568;
+            border: 2px solid #fbbf24;
             border-radius: 8px;
             cursor: default;
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s ease;
             transform-origin: center;
+            position: relative;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            user-select: none;
+            -webkit-user-drag: element;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .card.draggable {
@@ -70,13 +84,13 @@
         }
 
         .card.dragging {
-            position: fixed;
-            pointer-events: none;
+            opacity: 0.4;
+            cursor: grabbing;
             z-index: 1000;
         }
 
         .card.dragging-source {
-            opacity: 0;
+            visibility: hidden;
         }
 
         /* Tutorial-specific styles */
@@ -98,7 +112,7 @@
             border: 3px solid #fbbf24;
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
             pointer-events: none;
-            z-index: 1000;
+            z-index: 1;
             border-radius: 8px;
             animation: pulse 2s infinite;
         }
@@ -192,11 +206,321 @@
         /* Update styles */
         .tutorial-card-container {
             position: fixed;
-            left: 50%;
             top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 360px;
+            width: 260px;
+            padding: 10px;
             z-index: 100;
-            display: none; /* Hidden by default */
+        }
+
+        /* Add styles for the stat circles */
+        .stat-circle {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            background-color: rgba(31, 41, 55, 0.9);
+            border: 2px solid #4a5568;
+            z-index: 2;
+        }
+
+        .combat-circle {
+            top: 10px;
+            right: 10px;
+            border-color: #ef4444;
+        }
+
+        .combat-circle.highlighted {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+            z-index: 2;
+        }
+
+        .resource-circle {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-color: #3b82f6;
+        }
+
+        .resource-circle.highlighted {
+            transform: translateX(-50%) scale(1.5);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            z-index: 2;
+        }
+
+        /* Update card content styles for the bigger card */
+        .card-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .card-name {
+            color: white;
+            font-size: 1.4em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        /* Add styles for placed cards */
+        .card.placed {
+            width: 120px;
+            height: 170px;
+            margin: 5px;
+        }
+
+        /* Add row styles */
+        .row {
+            width: 100%;
+            min-height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin: 5px 0;
+        }
+
+        /* Add or update these styles in your existing CSS */
+        .placed-card {
+            width: 82.5px;  /* Match ingame.html size */
+            height: 112.5px;
+            background-size: cover;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, z-index 0.2s ease;
+            position: relative;
+            z-index: 15;
+        }
+        
+        .row {
+            width: 100%;
+            min-height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            pointer-events: none; /* Allow drops to pass through to zone */
+        }
+        
+        .row > * {
+            pointer-events: auto; /* Re-enable pointer events for row children */
+        }
+        
+        .zone {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .player-zone .row[data-type="unit"] { order: 1; }
+        .player-zone .row[data-type="power-up"] { order: 2; }
+        .player-zone .row[data-type="land"] { order: 3; }
+        
+        .ai-zone .row[data-type="land"] { order: 1; }
+        .ai-zone .row[data-type="power-up"] { order: 2; }
+        .ai-zone .row[data-type="unit"] { order: 3; }
+
+        /* Add these card element styles */
+        .card-name {
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-stats {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .resource-value, .combat-value {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            position: absolute;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .resource-value {
+            bottom: 34px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #40E0B5;
+            border: 2px solid #40E0B5;
+            box-shadow: 0 0 10px rgba(64, 224, 181, 0.3);
+        }
+
+        .combat-value {
+            top: 8px;
+            right: 12px;
+            color: #CD5C5C;
+            border: 2px solid #CD5C5C;
+            box-shadow: 0 0 10px rgba(205, 92, 92, 0.3);
+        }
+
+        /* Add styles for placed card stat circles */
+        .placed-card {
+            position: relative;
+        }
+
+        .placed-card .resource-value, .placed-card .combat-value {
+            width: 25px;
+            height: 25px;
+            font-size: 0.9em;
+        }
+
+        .placed-card .resource-value {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .placed-card .combat-value {
+            top: 20px;
+            right: 10px;
+        }
+
+        /* Update animations to work with both card sizes */
+        @keyframes resourcePulse {
+            0% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 0 10px currentColor;
+            }
+            50% {
+                transform: translateX(-50%) scale(1.2);
+                box-shadow: 0 0 20px currentColor;
+            }
+            100% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 0 10px currentColor;
+            }
+        }
+
+        @keyframes combatPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 10px currentColor;
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 0 20px currentColor;
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px currentColor;
+            }
+        }
+
+        .resource-value.highlight {
+            animation: resourcePulse 1s ease-in-out;
+            color: #40E0B5;
+            border-color: #40E0B5;
+            box-shadow: 0 0 20px rgba(64, 224, 181, 0.5);
+        }
+
+        .combat-value.highlight {
+            animation: combatPulse 1s ease-in-out;
+            color: #CD5C5C;
+            border-color: #CD5C5C;
+            box-shadow: 0 0 20px rgba(205, 92, 92, 0.5);
+        }
+
+        /* Update placed card styles */
+        .placed-card {
+            width: 82.5px;  /* Match ingame.html size */
+            height: 112.5px;
+            background-size: cover;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, z-index 0.2s ease;
+            position: relative;
+            z-index: 15;
+        }
+
+        .placed-card:hover {
+            transform: scale(2.5);
+            z-index: 20;
+        }
+
+        /* Update circle styles to match ingame.html */
+        .resource-circle, .combat-circle {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid black;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .resource-circle {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #40E0B5;
+        }
+
+        .combat-circle {
+            top: -10px;
+            right: -10px;
+            background-color: #CD5C5C;
+        }
+
+        .placed-card:hover .resource-circle, 
+        .placed-card:hover .combat-circle {
+            display: none;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .resource-circle, .combat-circle {
+                width: 23px;
+                height: 23px;
+                font-size: 15px;
+            }
         }
     </style>
 </head>
