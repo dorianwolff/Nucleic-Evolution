@@ -9,6 +9,107 @@
   <script src="effects.js"></script>
   <script src="tutorial-cards.js"></script>
   <script src="navbar.js"></script>
+  <script src="tutorial-config.js"></script>
+  <script>
+    function updateRewardDisplay() {
+        const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+        const isCompleted = localStorage.getItem(`tutorial_${selectedStage}_completed`) === 'true';
+        
+        const rewardsContainer = document.querySelector('.rewards-container');
+        if (rewardsContainer) {
+            if (isCompleted) {
+                const rewardsTitle = rewardsContainer.querySelector('.rewards-title');
+                if (rewardsTitle && !rewardsContainer.querySelector('.acquired-text')) {
+                    const acquiredText = document.createElement('div');
+                    acquiredText.className = 'acquired-text';
+                    acquiredText.textContent = 'Acquired';
+                    rewardsTitle.insertAdjacentElement('afterend', acquiredText);
+                }
+                
+                document.querySelectorAll('.reward-item').forEach(item => {
+                    item.classList.add('reward-acquired');
+                });
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupNavbar();
+        
+        // Get the current profile data
+        let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+        profileData.decks = profileData.decks || {};
+        
+        // Get the tutorial deck from profile data instead of separate storage
+        const tutorialDeck = profileData.decks.tutorial;
+        if (!tutorialDeck || !tutorialDeck.starCard) {
+            console.error('Tutorial deck not found in profile, initializing with default deck');
+            // Initialize with default deck
+            const defaultDeck = {
+                name: "Tutorial Deck",
+                cards: [tutorialCards.find(card => card.id === 9)], // Starter card
+                starCard: tutorialCards.find(card => card.id === 9)
+            };
+            profileData.decks.tutorial = defaultDeck;
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+        }
+
+        // Get the selected stage configuration
+        const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+        const stageConfig = stages[selectedStage];
+        
+        if (!stageConfig) {
+            console.error('Stage configuration not found');
+            return;
+        }
+
+        // Set up the AI deck with a default star card
+        const aiDeck = {
+            name: "AI Deck",
+            cards: stageConfig.aiDeck?.cards || [],
+            starCard: tutorialCards.find(card => card.id === 1) // Default AI star card
+        };
+
+        // Store decks for the game
+        localStorage.setItem('tutorialPlayerDeck', JSON.stringify(profileData.decks.tutorial));
+        localStorage.setItem('tutorialAIDeck', JSON.stringify(aiDeck));
+
+        // Update the display
+        displayDecks();
+        updateRewardDisplay();
+    });
+
+    // Update the displayDecks function to use profile data
+    function displayDecks() {
+        const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+        const tutorialPlayerDeck = profileData.decks?.tutorial;
+        const tutorialAIDeck = JSON.parse(localStorage.getItem('tutorialAIDeck'));
+        
+        if (!tutorialPlayerDeck || !tutorialAIDeck) {
+            console.error('Decks not found');
+            return;
+        }
+        
+        const decksContainer = document.querySelector('.decks-container');
+        if (!decksContainer) {
+            console.error('Decks container not found');
+            return;
+        }
+        
+        // Clear and update container
+        decksContainer.innerHTML = '';
+        decksContainer.style.display = 'grid';
+        decksContainer.style.opacity = '1';
+        decksContainer.style.visibility = 'visible';
+        
+        // Create and append deck elements
+        const playerDeckElement = createDeckElement(tutorialPlayerDeck, 'Your Deck');
+        const aiDeckElement = createDeckElement(tutorialAIDeck, 'AI Deck');
+        
+        decksContainer.appendChild(playerDeckElement);
+        decksContainer.appendChild(aiDeckElement);
+    }
+  </script>
   <style>
     /* Copy existing styles from playing.html */
     body {
@@ -327,176 +428,63 @@
   </button>
 
   <script>
-    // Tutorial stage configurations
     const tutorialStages = [
       {
         title: "Basic Combat",
         description: "Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.",
         aiDeck: {
           name: "Tutorial Deck 1",
-          starCard: tutorialCards.find(card => card.id === 1),
+          starCard: tutorialCards.find(card => card.id === 0),
           cards: [
+            tutorialCards.find(card => card.id === 0),
             tutorialCards.find(card => card.id === 1),
-            tutorialCards.find(card => card.id === 2),
-            tutorialCards.find(card => card.id === 3)
+            tutorialCards.find(card => card.id === 2)
           ]
-        },
-        playerDeck: JSON.parse(localStorage.getItem('tutorialDeck'))
-      },
-      // Add more stages here...
-    ];
-
-    // Add the stages configuration at the top of your script section
-    const stages = [
-      { 
-        x: 900, y: 400, 
-        label: "Units", 
-        rewards: {
-          cards: ['10.png', '11.png']
-        }
-      },
-      { 
-        x: 1200, y: 600, 
-        label: "Lands", 
-        rewards: {
-          cards: ['12.png', '13.png']
-        }
-      },
-      { 
-        x: 1500, y: 300, 
-        label: "Power-Ups", 
-        rewards: {
-          cards: ['14.png', '15.png']
-        }
-      },
-      { 
-        x: 1800, y: 700, 
-        label: "Civilisations",
-        rewards: {
-          cards: ['08.png', '02.png']
-        }
-      },
-      { 
-        x: 2100, y: 200, 
-        label: "Combat basics",
-        rewards: {
-          coins: 100
-        }
-      },
-      { 
-        x: 2400, y: 500, 
-        label: "Effects",
-        rewards: {
-          cards: ['01.png', '02.png']
-        }
-      },
-      { 
-        x: 2600, y: 800, 
-        label: "Deck Building",
-        rewards: {
-          cards: ['01.png', '02.png']
-        }
-      },
-      { 
-        x: 2800, y: 300, 
-        label: "Strategy Basics",
-        rewards: {
-          coins: 100
-        }
-      },
-      { 
-        x: 3000, y: 600, 
-        label: "Advanced Tactics",
-        rewards: {
-          cards: ['01.png', '02.png']
-        }
-      },
-      { 
-        x: 3200, y: 400, 
-        label: "Final Challenge",
-        rewards: {
-          cards: ['01.png'],
-          coins: 500
         }
       }
+      // Add more tutorial stages as needed
     ];
 
     document.addEventListener('DOMContentLoaded', () => {
       setupNavbar();
       
-      // First set up the stage and store decks
+      // Get the tutorial deck from localStorage
+      const tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
+      if (!tutorialDeck || !tutorialDeck.starCard) {
+          console.error('Tutorial deck not found or invalid, initializing with default deck');
+          // Initialize with default deck
+          const defaultDeck = {
+              name: "Tutorial Deck",
+              cards: [tutorialCards.find(card => card.id === 9)], // Starter card
+              starCard: tutorialCards.find(card => card.id === 9)
+          };
+          localStorage.setItem('tutorialDeck', JSON.stringify(defaultDeck));
+      }
+
+      // Get the selected stage configuration
       const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
-      const stageConfig = tutorialStages[selectedStage];
+      const stageConfig = stages[selectedStage];
       
-      // Get the stage rewards from the stages configuration
-      const stageRewards = stages[selectedStage].rewards;
-      
-      // Update the rewards display
-      const rewardsContainer = document.querySelector('.rewards-grid');
-      rewardsContainer.innerHTML = '';  // Clear existing rewards
-      
-      // Add coins reward if present
-      if (stageRewards.coins) {
-        const coinReward = document.createElement('div');
-        coinReward.className = 'reward-item';
-        coinReward.innerHTML = `
-          <div class="reward-icon">
-            <img src="Images/heads_coin.png" alt="Coins" class="coin-icon" style="width: 30px; height: 30px;">
-          </div>
-          <div class="reward-value">${stageRewards.coins} Coins</div>
-        `;
-        rewardsContainer.appendChild(coinReward);
-      }
-      
-      // Add card rewards if present
-      if (stageRewards.cards) {
-        stageRewards.cards.forEach(cardFile => {
-          const cardReward = document.createElement('div');
-          cardReward.className = 'reward-item';
-          cardReward.innerHTML = `
-            <div class="reward-icon">
-              <img src="Individual_Cards/Tutorial/fronts/${cardFile}" 
-                   alt="Card Reward" 
-                   class="reward-card" 
-                   style="width: 60px; height: 90px; border-radius: 6px; transition: transform 0.2s ease;">
-            </div>
-            <div class="reward-value">New Card</div>
-          `;
-          
-          // Add hover effect for the card image
-          const cardImage = cardReward.querySelector('.reward-card');
-          cardImage.addEventListener('mouseover', () => {
-            cardImage.style.transform = 'scale(1.5)';
-            cardImage.style.zIndex = '11';
-          });
-          cardImage.addEventListener('mouseout', () => {
-            cardImage.style.transform = 'scale(1)';
-            cardImage.style.zIndex = '1';
-          });
-          
-          rewardsContainer.appendChild(cardReward);
-        });
-      }
-      
-      // Get the player's deck from localStorage
-      const playerDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
-      if (!playerDeck) {
-          console.error('Player deck not found in localStorage');
+      if (!stageConfig) {
+          console.error('Stage configuration not found');
           return;
       }
-      
-      // Make sure the player deck has a star card (first card in deck)
-      if (playerDeck.cards && playerDeck.cards.length > 0) {
-          playerDeck.starCard = playerDeck.cards[0];
-      }
-      
-      // Store the decks
-      localStorage.setItem('tutorialAIDeck', JSON.stringify(stageConfig.aiDeck));
-      localStorage.setItem('tutorialPlayerDeck', JSON.stringify(playerDeck));
-      
-      // Then display the decks
+
+      // Set up the AI deck with a default star card
+      const aiDeck = {
+          name: "AI Deck",
+          cards: stageConfig.aiDeck?.cards || [],
+          starCard: tutorialCards.find(card => card.id === 1) // Default AI star card
+      };
+
+      // Store both decks
+      localStorage.setItem('tutorialPlayerDeck', localStorage.getItem('tutorialDeck'));
+      localStorage.setItem('tutorialAIDeck', JSON.stringify(aiDeck));
+
+      // Update the display
       displayDecks();
-      
+      updateRewardDisplay();
+
       // Set up the rest of the UI
       document.getElementById('tutorial-stage-title').textContent = stageConfig.title;
       document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
@@ -584,26 +572,34 @@
             deckElement.setAttribute('data-deck-type', 'player');
         }
         
-        // Create star card preview
+        // Create star card preview with fallback
         const starCardPreview = document.createElement('div');
         starCardPreview.className = 'deck-preview star-card';
-        starCardPreview.style.backgroundImage = `url('${deck.starCard.image}')`;
+        
+        // Use a default card back image if starCard is missing
+        const defaultCardBack = 'Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png';
+        const starCardImage = deck.starCard?.image || defaultCardBack;
+        starCardPreview.style.backgroundImage = `url('${starCardImage}')`;
         
         // Create cards container
         const cardsContainer = document.createElement('div');
         cardsContainer.className = 'cards-container';
         
         // Add all deck cards
-        deck.cards.forEach(card => {
-            const cardElement = document.createElement('div');
-            cardElement.className = 'mini-card';
-            cardElement.style.backgroundImage = `url('${card.image}')`;
-            cardsContainer.appendChild(cardElement);
-        });
+        if (deck.cards && Array.isArray(deck.cards)) {
+            deck.cards.forEach(card => {
+                if (card && card.image) {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'mini-card';
+                    cardElement.style.backgroundImage = `url('${card.image}')`;
+                    cardsContainer.appendChild(cardElement);
+                }
+            });
+        }
         
         const deckInfo = document.createElement('div');
         deckInfo.className = 'deck-info';
-        deckInfo.innerHTML = `<div class="deck-stats">Cards: ${deck.cards.length}</div>`;
+        deckInfo.innerHTML = `<div class="deck-stats">Cards: ${deck.cards?.length || 0}</div>`;
         
         deckElement.appendChild(starCardPreview);
         deckElement.appendChild(cardsContainer);

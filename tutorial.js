@@ -19,7 +19,8 @@ let gameState = {
     tutorialStep: 0,
     selectedTutorial: null, // Will store which tutorial is being played
     dragStartX: 0,
-    dragStartY: 0
+    dragStartY: 0,
+    tutorialRewardsGiven: {}, // Track which tutorials have given rewards
 };
 
 // Remove the global draggedCard variable since it's in gameState
@@ -1089,6 +1090,14 @@ function resolveCombat(zoneIndex) {
 
     // Update resources based on winner
     calculateAndUpdateResourcePoints(userZone, opponentZone, zoneWinner);
+
+    // After combat resolution, check if player won and handle rewards
+    if (zoneIndex === 0) { // Check if this is the first zone
+        setTimeout(() => {
+            //checkTutorialCompletion(zoneWinner);
+            checkTutorialCompletion('user');
+        }, 1500);
+    }
 }
 
 function applyGlowToLand(zone, winner) {
@@ -1124,5 +1133,133 @@ function updateResourceDisplay(player, value) {
     const element = document.getElementById(`${player}-resources`);
     if (element) {
         element.textContent = value;
+    }
+}
+
+function checkTutorialCompletion() {
+    const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+    const stageConfig = stages[selectedStage];
+    
+    if (!stageConfig) {
+        console.error('Stage configuration not found');
+        return;
+    }
+
+    // Check if this stage was already completed
+    const wasCompleted = localStorage.getItem(`tutorial_${selectedStage}_completed`) === 'true';
+    
+    // Store completion data
+    localStorage.setItem(`tutorial_${selectedStage}_completed`, 'true');
+    localStorage.setItem('lastCompletedTutorial', JSON.stringify({
+        stage: selectedStage,
+        justCompleted: true,
+        rewards: stageConfig.rewards
+    }));
+    
+    // Update progress only if this is the first time completing this stage
+    if (!wasCompleted) {
+        // Get profile data
+        let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+        
+        // Calculate progress increment (1/total stages)
+        const progressIncrement = (1 / stages.length) * 100;
+        
+        // Update tutorial progress in profile
+        profileData.tutorialProgress = (profileData.tutorialProgress || 0) + progressIncrement;
+        
+        // Update current stage progress
+        const currentProgress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
+        if (selectedStage >= currentProgress) {
+            localStorage.setItem('tutorialProgress', (selectedStage + 1).toString());
+        }
+        
+        // Save updated profile data
+        localStorage.setItem('profileData', JSON.stringify(profileData));
+    }
+
+    // Handle rewards
+    handleTutorialRewards(stageConfig.rewards);
+}
+
+// Add this helper function to handle rewards
+function handleTutorialRewards(rewards) {
+    let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+    profileData.decks = profileData.decks || {};
+    profileData.decks.tutorial = profileData.decks.tutorial || {
+        name: "Tutorial Deck",
+        cards: [],
+        starCard: tutorialCards.find(card => card.id === 9)
+    };
+
+    if (rewards) {
+        if (rewards.cards && rewards.cards.length > 0) {
+            rewards.cards.forEach(cardId => {
+                const cardData = tutorialCards.find(card => card.id === cardId);
+                if (cardData) {
+                    if (!profileData.cards?.some(c => c.id === cardId)) {
+                        profileData.cards = profileData.cards || [];
+                        profileData.cards.push(cardData);
+                    }
+                    if (!profileData.decks.tutorial.cards.some(c => c.id === cardId)) {
+                        profileData.decks.tutorial.cards.push(cardData);
+                    }
+                }
+            });
+        }
+
+        if (rewards.coins) {
+            profileData.coins = (profileData.coins || 0) + rewards.coins;
+        }
+    }
+
+    localStorage.setItem('profileData', JSON.stringify(profileData));
+}
+
+function showRewardAnimations(rewards) {
+    console.log("Showing reward animations for:", rewards); // Debug log
+    
+    // Coin reward animation
+    if (rewards.coins) {
+        const coinReward = document.createElement('div');
+        coinReward.className = 'coin-gain';
+        coinReward.textContent = `+${rewards.coins}`;
+        document.body.appendChild(coinReward);
+        
+        // Position near resource counter
+        const resourceCounter = document.querySelector('.resource-counter.player-resources');
+        if (resourceCounter) {
+            const rect = resourceCounter.getBoundingClientRect();
+            coinReward.style.left = `${rect.left}px`;
+            coinReward.style.top = `${rect.top}px`;
+        }
+        
+        // Update player's coins
+        const currentCoins = parseInt(localStorage.getItem('playerCoins') || '0');
+        localStorage.setItem('playerCoins', (currentCoins + rewards.coins).toString());
+    }
+    
+    // Card rewards animation
+    if (rewards.cards && rewards.cards.length > 0) {
+        rewards.cards.forEach((cardFile, index) => {
+            setTimeout(() => {
+                // Add card to player's collection
+                const playerCards = JSON.parse(localStorage.getItem('playerCards') || '[]');
+                if (!playerCards.includes(cardFile)) {
+                    playerCards.push(cardFile);
+                    localStorage.setItem('playerCards', JSON.stringify(playerCards));
+                }
+                
+                // Show card gain animation
+                const cardReward = document.createElement('div');
+                cardReward.className = 'card-reward-animation';
+                cardReward.style.backgroundImage = `url('Individual_Cards/Tutorial/fronts/${cardFile}')`;
+                document.body.appendChild(cardReward);
+                
+                // Add animation class after a small delay
+                setTimeout(() => {
+                    cardReward.classList.add('card-gained');
+                }, 100);
+            }, index * 1000); // Stagger card animations
+        });
     }
 }

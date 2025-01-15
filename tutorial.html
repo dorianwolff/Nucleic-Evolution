@@ -9,6 +9,7 @@
     <script src="effects.js"></script>
     <script src="navbar.js"></script>
     <script src="tutorial-cards.js"></script>
+    <script src="tutorial-config.js"></script>
     <style>
         body {
             background-color: #1f2937;
@@ -237,71 +238,65 @@
             border-top: 10px solid rgba(0, 0, 0, 0.9);
         }
 
-        .tutorial-deck {
+        .tutorial-deck-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 150px;
-            height: 204px;
-            perspective: 1000px;
-            z-index: 50;
-            cursor: pointer;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 5px;
+            z-index: 1000;
+        }
+
+        .tutorial-deck {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
         .deck-cards {
             position: relative;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.3s ease;
+            width: 100px;
+            height: 140px;
+            cursor: pointer;
+        }
+
+        .deck-count {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .deck-cards:hover .deck-count {
+            opacity: 1;
         }
 
         .deck-card {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: #2d3748;
-            border-radius: 10px;
-            border: 2px solid #4a5568;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transform: translateZ(var(--z-offset));
-            background-image: url('Images/Card_elements/card_back.webp');
             background-size: cover;
-        }
-
-        .deck-info {
-            position: fixed;
-            bottom: 240px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
             border-radius: 8px;
-            border: 2px solid #4a5568;
-            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: translateY(var(--z-offset, 0));
+            transition: transform 0.2s ease;
+        }
+
+        /* Remove redundant styles */
+        .deck-info-container,
+        #deck-info,
+        #tutorial-coins {
             display: none;
-            z-index: 20;
-        }
-
-        .tutorial-deck:hover .deck-info {
-            display: block;
-        }
-
-        @keyframes cardAddition {
-            0% {
-                transform: translate(0, -500px) rotate(-45deg);
-                opacity: 0;
-            }
-            100% {
-                transform: translate(0, 0) rotate(0deg);
-                opacity: 1;
-            }
-        }
-
-        .new-card {
-            animation: cardAddition 1s ease-out forwards;
         }
 
         /* Add styles for the star card */
@@ -378,6 +373,92 @@
             pointer-events: none;
             animation: coinFloat 1s ease-out forwards;
         }
+
+        .cards-collected {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .completed-node {
+            background: #4CAF50 !important; /* Green */
+            box-shadow: 0 0 20px #4CAF50 !important;
+        }
+
+        .unlocked-node {
+            background: #9C27B0 !important; /* Purple */
+            box-shadow: 0 0 20px #9C27B0 !important;
+        }
+
+        .stage.completed-node::before {
+            background: #4CAF50;
+        }
+
+        .stage.unlocked-node::before {
+            background: #9C27B0;
+        }
+
+        /* Add these to your existing styles */
+        .stage-hover-info {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            min-width: 240px;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+            pointer-events: none;
+        }
+
+        .reward-cards {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .reward-item {
+            width: 70px;
+            height: 98px;
+            background-size: cover;
+            border-radius: 5px;
+            border: 2px solid #666;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .reward-item.reward-acquired {
+            border: 3px solid #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .reward-coins {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: gold;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.3em;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            padding: 5px 0;
+        }
+
+        .rewards-title {
+            color: #4CAF50;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -397,90 +478,25 @@
         <span id="tutorial-coins" class="coin-amount">0</span>
     </div>
 
-    <div class="tutorial-deck" id="tutorial-deck">
-        <div class="deck-info" id="deck-info">
-            <h3 class="font-bold mb-2">Tutorial Deck</h3>
-            <p>Cards collected: <span id="card-count">0</span></p>
-        </div>
-        <div class="deck-cards" id="deck-cards">
-            <!-- Cards will be added dynamically -->
+    <div class="tutorial-deck-container">
+        <div class="tutorial-deck">
+            <div class="star-card"></div>
+            <div id="deck-cards" class="deck-cards">
+                <div class="deck-count"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        const stages = [
-            { 
-                x: 900, y: 400, 
-                label: "Units", 
-                rewards: {
-                    cards: ['10.png', '11.png'] // land rewards
-                }
-            },
-            { 
-                x: 1200, y: 600, 
-                label: "Lands", 
-                rewards: {
-                    cards: ['12.png', '13.png']
-                }
-            },
-            { 
-                x: 1500, y: 300, 
-                label: "Power-Ups", 
-                rewards: {
-                    cards: ['14.png', '15.png']
-                }
-            },
-            { x: 1800, y: 700, 
-                label: "Civilisations",
-                rewards: {
-                    cards: ['08.png', '02.png']
-                }
-            },
-            { x: 2100, y: 200, 
-                label: "Combat basics",
-                rewards: {
-                    coins: 100
-                }
-            },
-            { x: 2400, y: 500, 
-                label: "Effects",
-                rewards: {
-                    cards: ['01.png', '02.png']
-                }
-            },
-            { x: 2600, y: 800, 
-                label: "Deck Building",
-                rewards: {
-                    cards: ['01.png', '02.png']
-                }
-            },
-            { x: 2800, y: 300, 
-                label: "Strategy Basics",
-                rewards: {
-                    coins: 100
-                }
-            },
-            { x: 3000, y: 600, 
-                label: "Advanced Tactics",
-                rewards: {
-                    cards: ['01.png', '02.png']
-                }
-            },
-            { x: 3200, y: 400, 
-                label: "Final Challenge",
-                rewards: {
-                    cards: ['01.png'],
-                    coins: 500
-                }
-            }
-        ];
-
         document.addEventListener('DOMContentLoaded', () => {
             setupNavbar();
             createTutorialMap();
             initializeDeck();
             centerOnCurrentStage();
             updateCoinsDisplay();
+            handleCompletionRewards();
+            updateNodeColors();
+            initializeCompletedNodes();
         });
 
         function createStageParticles(stageElement, color) {
@@ -599,15 +615,18 @@
                     
                     // Add cards if present
                     if (stage.rewards.cards) {
-                        stage.rewards.cards.forEach(cardFile => {
-                            const cardReward = document.createElement('div');
-                            cardReward.className = 'reward-item';
-                            cardReward.innerHTML = `
-                                <img src="Individual_Cards/Tutorial/fronts/${cardFile}" 
-                                     alt="Card Reward" 
-                                     class="reward-card">
-                            `;
-                            rewardsContainer.appendChild(cardReward);
+                        stage.rewards.cards.forEach(cardId => {
+                            const cardData = tutorialCards.find(card => card.id === cardId);
+                            if (cardData) {
+                                const cardReward = document.createElement('div');
+                                cardReward.className = 'reward-item';
+                                cardReward.innerHTML = `
+                                    <img src="${cardData.image}" 
+                                         alt="Card Reward" 
+                                         class="reward-card">
+                                `;
+                                rewardsContainer.appendChild(cardReward);
+                            }
                         });
                     }
                     
@@ -641,16 +660,27 @@
         }
 
         function handleStageClick(index) {
-            const progress = JSON.parse(localStorage.getItem('tutorialProgress')) || 0;
+            const progress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
             if (index <= progress) {
                 const stage = stages[index];
                 
+                // Get the current profile data and tutorial deck
+                let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                profileData.decks = profileData.decks || {};
+                const tutorialDeck = profileData.decks.tutorial || {
+                    name: "Tutorial Deck",
+                    cards: [],
+                    starCard: tutorialCards.find(card => card.id === 9)
+                };
+
+                // Store the tutorial deck for the game
+                localStorage.setItem('tutorialDeck', JSON.stringify(tutorialDeck));
+                
+                // Handle rewards if not claimed
                 if (stage.rewards) {
                     const claimedRewards = JSON.parse(localStorage.getItem('claimedRewards') || '{}');
                     
                     if (!claimedRewards[index]) {
-                        let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                        
                         // Handle coin rewards with animation
                         if (stage.rewards.coins) {
                             const rect = event.target.getBoundingClientRect();
@@ -665,24 +695,6 @@
                         localStorage.setItem('profileData', JSON.stringify(profileData));
                         updateCoinsDisplay();
                         
-                        // Handle card rewards
-                        if (stage.rewards.cards) {
-                            stage.rewards.cards.forEach((cardFile, i) => {
-                                // Find the card in the tutorialCards array
-                                const cardId = parseInt(cardFile.split('.')[0]) + 1;
-                                const rewardCard = tutorialCards.find(card => card.id === cardId);
-                                
-                                if (rewardCard) {
-                                    profileData.cards = profileData.cards || [];
-                                    profileData.cards.push(rewardCard);
-                                    
-                                    setTimeout(() => {
-                                        addCardToDeck(cardFile);
-                                    }, i * 500);
-                                }
-                            });
-                        }
-                        
                         // Mark rewards as claimed
                         claimedRewards[index] = true;
                         localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
@@ -692,104 +704,148 @@
                 // Store the selected stage and redirect to the battle
                 localStorage.setItem('selectedTutorialStage', index);
                 window.location.href = 'tutorial-playing.html';
+
+                // After stage completion
+                const stageElement = document.querySelector(`.stage[data-index="${index}"]`);
+                if (stageElement) {
+                    // Remove purple highlight from current stage
+                    stageElement.classList.remove('unlocked-node');
+                    // Add green completion color
+                    stageElement.classList.add('completed-node');
+                    
+                    // Update next stage to purple if it exists and isn't the boss
+                    const nextIndex = index + 1;
+                    if (nextIndex < stages.length - 1) { // Check if not the last stage
+                        const nextStage = document.querySelector(`.stage[data-index="${nextIndex}"]`);
+                        if (nextStage) {
+                            nextStage.classList.add('unlocked-node');
+                        }
+                    }
+                }
+
+                // Update progress
+                if (index >= progress) {
+                    localStorage.setItem('tutorialProgress', (index + 1).toString());
+                    updateProgressDisplay();
+                }
             }
         }
 
         function initializeDeck() {
             // Check if this is the first time loading the tutorial
             const isFirstTime = !localStorage.getItem('tutorialInitialized');
-            
-            const deckCards = document.getElementById('deck-cards');
-            const starterCard = tutorialCards.find(card => card.id === 6); // Changed from cards to tutorialCards
+            let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            const starterCard = tutorialCards.find(card => card.id === 9);
             
             if (isFirstTime) {
                 // Initialize tutorial progress
                 localStorage.setItem('tutorialProgress', '0');
                 localStorage.setItem('tutorialInitialized', 'true');
                 
-                // Initialize profile data
-                let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                // Initialize profile data with tutorial deck
                 profileData.tutorialProgress = 0;
                 profileData.campaignProgress = 0;
                 profileData.coins = profileData.coins || 0;
                 profileData.cards = profileData.cards || [];
+                profileData.decks = profileData.decks || {};
+                profileData.decks.tutorial = {
+                    name: "Tutorial Deck",
+                    cards: [starterCard],
+                    starCard: starterCard
+                };
                 profileData.cards.push(starterCard);
                 localStorage.setItem('profileData', JSON.stringify(profileData));
+                
+                // Show collection animation for the starter card only on first time
+                addCardToDeck(starterCard);
             }
             
-            // Create star card display
-            const starCardDiv = document.createElement('div');
-            starCardDiv.className = 'star-card';
-            starCardDiv.style.backgroundImage = `url('${starterCard.image}')`;
-            document.querySelector('.tutorial-deck').appendChild(starCardDiv);
-            
-            // Create single card for initial deck
-            const card = document.createElement('div');
-            card.className = 'deck-card';
-            card.style.setProperty('--z-offset', '0px');
-            card.style.backgroundImage = "url('Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png')";
-            
-            deckCards.appendChild(card);
-            
-            // Store deck in localStorage
-            const tutorialDeck = {
-                cards: [starterCard]
+            // Get current tutorial deck from profile data
+            const tutorialDeck = profileData.decks?.tutorial || { 
+                name: "Tutorial Deck",
+                cards: [starterCard],
+                starCard: starterCard
             };
-            localStorage.setItem('tutorialDeck', JSON.stringify(tutorialDeck));
-            localStorage.setItem('tutorialPlayerDeck', JSON.stringify(tutorialDeck)); // For tutorial-playing.html
             
-            updateDeckInfo();
-            
-            if (isFirstTime) {
-                // Show collection animation for the starter card
-                const cardImage = starterCard.image.split('/').pop();
-                addCardToDeck(cardImage);
+            // Update star card display
+            const starCardDiv = document.querySelector('.star-card');
+            if (starCardDiv && tutorialDeck.starCard) {
+                starCardDiv.style.backgroundImage = `url('${tutorialDeck.starCard.image}')`;
             }
+            
+            // Update deck count display
+            const deckCount = document.getElementById('deck-count');
+            if (deckCount) {
+                deckCount.textContent = tutorialDeck.cards.length;
+            }
+            
+            // Update deck display
+            updateDeckDisplay(tutorialDeck.cards);
+            
+            // Update progress display
+            updateProgressDisplay();
         }
 
         function updateDeckInfo() {
-            const cardCount = document.querySelectorAll('.deck-card').length;
-            document.getElementById('card-count').textContent = cardCount;
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            const tutorialDeck = profileData.decks?.tutorial || { cards: [] };
             
-            // Update deck info text
-            const deckInfo = document.getElementById('deck-info');
-            deckInfo.innerHTML = `
-                <h3 class="font-bold mb-2">Tutorial Deck</h3>
-                <p>Cards collected: <span id="card-count">${cardCount}</span></p>
-            `;
-        }
-
-        function addCardToDeck(cardImage) {
-            const deckCards = document.getElementById('deck-cards');
-            const newCard = document.createElement('div');
-            newCard.className = 'deck-card new-card';
-            newCard.style.setProperty('--z-offset', `-${deckCards.children.length * 2}px`);
-            
-            // If it's a reward card, set its background image
-            if (cardImage) {
-                newCard.style.backgroundImage = `url('Individual_Cards/Tutorial/fronts/${cardImage}')`;
-                
-                // Update star card if this is a new card
-                const starCard = document.querySelector('.star-card');
-                if (starCard) {
-                    starCard.style.backgroundImage = `url('Individual_Cards/Tutorial/fronts/${cardImage}')`;
-                }
+            // Update deck count
+            const deckCount = document.getElementById('deck-count');
+            if (deckCount) {
+                deckCount.textContent = tutorialDeck.cards.length;
             }
             
-            deckCards.appendChild(newCard);
-            updateDeckInfo();
+            // Update deck display
+            updateDeckDisplay(tutorialDeck.cards);
             
-            // Remove animation class after it completes
-            newCard.addEventListener('animationend', () => {
-                newCard.classList.remove('new-card');
-                newCard.style.backgroundImage = "url('Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png')";
-            });
+            // Update star card
+            const starCard = document.querySelector('.star-card');
+            if (starCard && tutorialDeck.starCard) {
+                starCard.style.backgroundImage = `url('${tutorialDeck.starCard.image}')`;
+            }
+        }
+
+        function addCardToDeck(cardData) {
+            if (!cardData || !cardData.image) {
+                console.error('Invalid card data:', cardData);
+                return;
+            }
+            
+            // Update profile data
+            let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            profileData.decks = profileData.decks || {};
+            profileData.decks.tutorial = profileData.decks.tutorial || {
+                name: "Tutorial Deck",
+                cards: [],
+                starCard: cardData
+            };
+            
+            // Add card to deck if not already present
+            if (!profileData.decks.tutorial.cards.some(card => card.id === cardData.id)) {
+                profileData.decks.tutorial.cards.push(cardData);
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+            }
+            
+            // Create and animate new card
+            const deckCards = document.getElementById('deck-cards');
+            if (deckCards) {
+                const newCard = document.createElement('div');
+                newCard.className = 'deck-card new-card';
+                newCard.style.backgroundImage = `url('${cardData.image}')`;
+                deckCards.appendChild(newCard);
+            }
+            
+            // Update deck information
+            updateDeckInfo();
         }
 
         function updateCoinsDisplay() {
             const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-            const coins = profileData.coins || 0;
-            document.getElementById('tutorial-coins').textContent = coins;
+            const coinDisplay = document.getElementById('tutorial-coins');
+            if (coinDisplay) {
+                coinDisplay.textContent = profileData.coins || 0;
+            }
         }
 
         function animateCoinsGain(amount, x, y) {
@@ -812,6 +868,227 @@
             coinsDisplay.addEventListener('animationend', () => {
                 coinsDisplay.classList.remove('coin-pop');
             });
+        }
+
+        function handleCompletionRewards() {
+            const completionData = JSON.parse(localStorage.getItem('lastCompletedTutorial'));
+            if (!completionData || !completionData.justCompleted) return;
+            
+            const rewards = completionData.rewards;
+            
+            // Clear the completion data
+            localStorage.setItem('lastCompletedTutorial', JSON.stringify({...completionData, justCompleted: false}));
+            
+            if (rewards.cards && rewards.cards.length > 0) {
+                // Get current tutorial deck
+                let tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck') || '{}');
+                tutorialDeck.cards = tutorialDeck.cards || [];
+                
+                rewards.cards.forEach((cardId, index) => {
+                    setTimeout(() => {
+                        const cardData = tutorialCards.find(card => card.id === cardId);
+                        if (!cardData) {
+                            console.error(`Card with ID ${cardId} not found in tutorialCards`);
+                            return;
+                        }
+                        
+                        // Add card to tutorial deck if not already present
+                        if (!tutorialDeck.cards.some(card => card.id === cardId)) {
+                            tutorialDeck.cards.push(cardData);
+                            localStorage.setItem('tutorialDeck', JSON.stringify(tutorialDeck));
+                            
+                            // Show card acquisition animation
+                            addCardToDeck(cardData);
+                            
+                            // Update deck display
+                            updateDeckDisplay(tutorialDeck.cards);
+                        }
+                    }, index * 1500);
+                });
+            }
+            
+            // Handle coin rewards
+            if (rewards.coins) {
+                const coinReward = document.createElement('div');
+                coinReward.className = 'coin-gain';
+                coinReward.textContent = `+${rewards.coins}`;
+                document.body.appendChild(coinReward);
+                
+                // Update player's coins
+                let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                profileData.coins = (profileData.coins || 0) + rewards.coins;
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                
+                setTimeout(() => {
+                    coinReward.remove();
+                }, 2000);
+            }
+            
+            updateNodeColors();
+            markCompletedStage();
+        }
+
+        // Add this new function to handle stage completion marking
+        function markCompletedStage() {
+            const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+            const stageElement = document.querySelector(`.stage[data-index="${selectedStage}"]`);
+            
+            if (stageElement) {
+                stageElement.classList.add('completed-node');
+                
+                // Add completion marker if not exists
+                if (!stageElement.querySelector('.completion-marker')) {
+                    const completionMarker = document.createElement('div');
+                    completionMarker.className = 'completion-marker';
+                    completionMarker.innerHTML = '✓';
+                    stageElement.appendChild(completionMarker);
+                }
+            }
+        }
+
+        // Add this function to update reward display
+        function updateRewardDisplay() {
+            const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+            const isCompleted = localStorage.getItem(`tutorial_${selectedStage}_completed`) === 'true';
+            
+            if (isCompleted) {
+                document.querySelectorAll('.reward-item').forEach(item => {
+                    if (!item.classList.contains('reward-acquired')) {
+                        item.classList.add('reward-acquired');
+                        
+                        // Add "Acquired" text if not already present
+                        const rewardsContainer = item.closest('.rewards-container');
+                        if (rewardsContainer && !rewardsContainer.querySelector('.acquired-text')) {
+                            const acquiredText = document.createElement('div');
+                            acquiredText.className = 'acquired-text';
+                            acquiredText.textContent = 'Acquired';
+                            rewardsContainer.insertBefore(acquiredText, rewardsContainer.firstChild);
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateNodeColors() {
+            const currentProgress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
+            
+            document.querySelectorAll('.stage').forEach((node, index) => {
+                // Remove existing color classes
+                node.classList.remove('completed-node', 'unlocked-node');
+                
+                if (index < currentProgress) {
+                    // Completed stages are green
+                    node.classList.add('completed-node');
+                } else if (index === currentProgress && index < stages.length - 1) {
+                    // Current unlocked stage is purple (except for boss stage)
+                    node.classList.add('unlocked-node');
+                }
+            });
+        }
+
+        // Add this new function to update the deck display
+        function updateDeckDisplay(cards) {
+            const deckCards = document.getElementById('deck-cards');
+            const deckCount = document.querySelector('.deck-count');
+            if (!deckCards) return;
+            
+            // Clear existing cards but keep the count element
+            deckCards.innerHTML = '';
+            
+            // Recreate the count element
+            const countElement = document.createElement('div');
+            countElement.className = 'deck-count';
+            countElement.textContent = `${cards.length} Cards`;
+            deckCards.appendChild(countElement);
+            
+            // Add cards
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'deck-card';
+                cardElement.style.setProperty('--z-offset', `${index * -2}px`);
+                cardElement.style.backgroundImage = "url('Individual_Cards/Nucleic_Evolution_1_pngs/backs/000_back.png')";
+                deckCards.appendChild(cardElement);
+            });
+        }
+
+        // Add this helper function to update progress display
+        function updateProgressDisplay() {
+            const totalStages = stages.length;
+            const completedStages = parseInt(localStorage.getItem('tutorialProgress')) || 0;
+            const progress = Math.floor((completedStages / totalStages) * 100);
+            
+            const progressDisplay = document.querySelector('.cards-collected');
+            if (progressDisplay) {
+                progressDisplay.textContent = `Tutorial Progress: ${progress}%`;
+            }
+        }
+
+        // Add this function to initialize completed nodes
+        function initializeCompletedNodes() {
+            const progress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
+            
+            document.querySelectorAll('.stage').forEach((node, index) => {
+                if (index < progress) {
+                    node.classList.add('completed-node');
+                    // Add completion marker
+                    if (!node.querySelector('.completion-marker')) {
+                        const completionMarker = document.createElement('div');
+                        completionMarker.className = 'completion-marker';
+                        completionMarker.innerHTML = '✓';
+                        node.appendChild(completionMarker);
+                    }
+                    
+                    // Add hover event for rewards
+                    node.addEventListener('mouseenter', () => showStageRewards(index));
+                    node.addEventListener('mouseleave', hideStageRewards);
+                } else if (index === progress) {
+                    node.classList.add('unlocked-node');
+                }
+            });
+        }
+
+        // Add these functions to handle reward display on hover
+        function showStageRewards(stageIndex) {
+            const stage = stages[stageIndex];
+            if (!stage || !stage.rewards) return;
+            
+            const isCompleted = localStorage.getItem(`tutorial_${stageIndex}_completed`) === 'true';
+            
+            const hoverInfo = document.createElement('div');
+            hoverInfo.className = 'stage-hover-info';
+            hoverInfo.innerHTML = `
+                <div class="rewards-container">
+                    <h3 class="rewards-title">${isCompleted ? 'Rewards Acquired:' : 'Available Rewards:'}</h3>
+                    ${stage.rewards.cards ? `
+                        <div class="reward-cards">
+                            ${stage.rewards.cards.map(cardId => {
+                                const card = tutorialCards.find(c => c.id === cardId);
+                                return card ? `
+                                    <div class="reward-item ${isCompleted ? 'reward-acquired' : ''}" 
+                                         style="background-image: url('${card.image}')"></div>
+                                ` : '';
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                    ${stage.rewards.coins ? `
+                        <div class="reward-coins ${isCompleted ? 'reward-acquired' : ''}">
+                            <span class="coin-icon">🪙</span> ${stage.rewards.coins}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            const stageElement = document.querySelector(`.stage[data-index="${stageIndex}"]`);
+            if (stageElement) {
+                stageElement.appendChild(hoverInfo);
+            }
+        }
+
+        function hideStageRewards() {
+            const hoverInfo = document.querySelector('.stage-hover-info');
+            if (hoverInfo) {
+                hoverInfo.remove();
+            }
         }
     </script>
 </body>
