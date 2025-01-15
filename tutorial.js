@@ -82,7 +82,7 @@ const tutorialConfigs = {
             {
                 message: "You better leave them a lasting impression!",
                 highlight: '.card',
-                action: 'toBeDone',
+                action: 'startConfrontation',
                 requiredAction: null
             }
         ]
@@ -230,6 +230,9 @@ function executeTutorialAction(action) {
             break;
         case 'playAICard':
             playOpponentStarCard();
+            break;
+        case 'startConfrontation':
+            revealCardsAndCombat(0);
             break;
     }
 }
@@ -938,4 +941,188 @@ function playOpponentStarCard() {
         document.removeEventListener('click', progressHandler);
         nextTutorialStep();
     }, { once: true }); // Using once: true as an alternative way to ensure one-time execution
+}
+
+// Add this function to handle card revealing and combat in tutorial
+function revealCardsAndCombat(zoneIndex = 0) {
+    if (zoneIndex >= 3) return; // End if we've checked all zones
+
+    // Get the current zone elements
+    const playerZone = document.querySelector(`#player-${['left', 'center', 'right'][zoneIndex]}`);
+    const aiZone = document.querySelector(`#ai-${['left', 'center', 'right'][zoneIndex]}`);
+
+    // Check if there are cards in both zones
+    const playerCards = playerZone.querySelectorAll('.placed-card');
+    const aiCards = aiZone.querySelectorAll('.placed-card');
+
+    if (playerCards.length === 0 || aiCards.length === 0) {
+        // No cards in one or both zones, move to next zone
+        revealCardsAndCombat(zoneIndex + 1);
+        return;
+    }
+
+    // Check if all cards are already face up
+    const allCardsRevealed = Array.from(aiCards).every(card => 
+        card.dataset.isFaceDown === 'false' || !card.dataset.isFaceDown
+    );
+
+    if (allCardsRevealed) {
+        // Cards are already revealed, proceed to combat after delay
+        setTimeout(() => {
+            resolveCombat(zoneIndex);
+            // Move to next zone after combat
+            setTimeout(() => {
+                revealCardsAndCombat(zoneIndex + 1);
+            }, 1500);
+        }, 1500);
+        return;
+    }
+
+    // Reveal cards in sequence
+    const landCards = aiZone.querySelectorAll('.row[data-type="land"] .placed-card');
+    const unitCards = aiZone.querySelectorAll('.row[data-type="unit"] .placed-card');
+    const powerUpCards = aiZone.querySelectorAll('.row[data-type="power-up"] .placed-card');
+
+    function flipCardsSequentially(cards, index, callback) {
+        if (index >= cards.length) {
+            if (callback) callback();
+            return;
+        }
+        const card = cards[index];
+        if (!card.dataset.realImage) {
+            flipCardsSequentially(cards, index + 1, callback);
+            return;
+        }
+
+        // Remove hover effect during flip
+        card.style.pointerEvents = 'none';
+
+        setTimeout(() => {
+            card.style.backgroundImage = `url('${card.dataset.realImage}')`;
+            card.style.backgroundSize = 'cover';
+            card.dataset.isFaceDown = 'false';
+            addCardNumbers(card);
+            card.style.pointerEvents = 'auto';
+            flipCardsSequentially(cards, index + 1, callback);
+        }, 1000);
+    }
+
+    // Flip cards in sequence, then proceed to combat
+    flipCardsSequentially(Array.from(unitCards), 0, () => {
+        flipCardsSequentially(Array.from(landCards), 0, () => {
+            flipCardsSequentially(Array.from(powerUpCards), 0, () => {
+                // After all cards are revealed, wait 1.5s then do combat
+                setTimeout(() => {
+                    resolveCombat(zoneIndex);
+                    // Move to next zone after combat
+                    setTimeout(() => {
+                        revealCardsAndCombat(zoneIndex + 1);
+                    }, 1500);
+                }, 1500);
+            });
+        });
+    });
+}
+
+// Helper function to add card numbers (combat/resource values)
+function addCardNumbers(card) {
+    // Remove existing circles if any
+    const existingCircles = card.querySelectorAll('.combat-circle, .resource-circle');
+    existingCircles.forEach(circle => circle.remove());
+
+    // Add combat circle
+    const combatCircle = document.createElement('div');
+    combatCircle.className = 'combat-circle';
+    combatCircle.textContent = card.dataset.rawCombat;
+    card.appendChild(combatCircle);
+
+    // Add resource circle
+    const resourceCircle = document.createElement('div');
+    resourceCircle.className = 'resource-circle';
+    resourceCircle.textContent = card.dataset.rawResource;
+    card.appendChild(resourceCircle);
+}
+
+// Add these combat-related functions
+function resolveCombat(zoneIndex) {
+    const userZone = document.querySelector(`#player-${['left', 'center', 'right'][zoneIndex]}`);
+    const opponentZone = document.querySelector(`#ai-${['left', 'center', 'right'][zoneIndex]}`);
+
+    const userUnitCard = userZone.querySelector('.row[data-type="unit"] .placed-card');
+    const opponentUnitCard = opponentZone.querySelector('.row[data-type="unit"] .placed-card');
+    
+    // Get base combat values
+    let userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.rawCombat || 0, 10) : 0;
+    let opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawCombat || 0, 10) : 0;
+
+    let zoneWinner = null;
+
+    // Determine winner and mark defeated units
+    if (userUnitCombat > opponentUnitCombat) {
+        // Player wins - grey out opponent's unit
+        if (opponentUnitCard) {
+            opponentUnitCard.style.filter = 'grayscale(100%)';
+            opponentUnitCard.style.opacity = '0.7';
+        }
+        applyGlowToLand(opponentZone, 'user');
+        zoneWinner = 'user';
+    } else if (userUnitCombat < opponentUnitCombat) {
+        // AI wins - grey out player's unit
+        if (userUnitCard) {
+            userUnitCard.style.filter = 'grayscale(100%)';
+            userUnitCard.style.opacity = '0.7';
+        }
+        applyGlowToLand(userZone, 'ai');
+        zoneWinner = 'ai';
+    } else {
+        // Tie - grey out both units
+        if (userUnitCard) {
+            userUnitCard.style.filter = 'grayscale(50%)';
+            userUnitCard.style.opacity = '0.85';
+        }
+        if (opponentUnitCard) {
+            opponentUnitCard.style.filter = 'grayscale(50%)';
+            opponentUnitCard.style.opacity = '0.85';
+        }
+        zoneWinner = 'tie';
+    }
+
+    // Update resources based on winner
+    calculateAndUpdateResourcePoints(userZone, opponentZone, zoneWinner);
+}
+
+function applyGlowToLand(zone, winner) {
+    const landRow = zone.querySelector('.row[data-type="land"]');
+    if (landRow) {
+        // Remove any existing auras first
+        landRow.classList.remove('aura-light-blue', 'aura-light-red');
+        // Add the appropriate aura
+        landRow.classList.add(winner === 'user' ? 'aura-light-blue' : 'aura-light-red');
+    }
+}
+
+function calculateAndUpdateResourcePoints(userZone, opponentZone, zoneWinner) {
+    const userUnitCard = userZone.querySelector('.row[data-type="unit"] .placed-card');
+    const opponentUnitCard = opponentZone.querySelector('.row[data-type="unit"] .placed-card');
+
+    // Get resource values
+    const userResource = userUnitCard ? parseInt(userUnitCard.dataset.rawResource || 0, 10) : 0;
+    const opponentResource = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawResource || 0, 10) : 0;
+
+    // Update resources based on winner
+    if (zoneWinner === 'user') {
+        gameState.playerResources += userResource;
+        updateResourceDisplay('player', gameState.playerResources);
+    } else if (zoneWinner === 'ai') {
+        gameState.aiResources += opponentResource;
+        updateResourceDisplay('ai', gameState.aiResources);
+    }
+    // No resources awarded for ties
+}
+
+function updateResourceDisplay(player, value) {
+    const element = document.getElementById(`${player}-resources`);
+    if (element) {
+        element.textContent = value;
+    }
 }
