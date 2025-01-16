@@ -39,102 +39,11 @@ const STEP_COOLDOWN = 1500; // 1.5 seconds in milliseconds
 // Add this at the top with other game state variables
 let confrontationComplete = false;
 
-// Tutorial configurations for different types
-const tutorialConfigs = {
-    'units': {
-        steps: [
-            {
-                message: "Welcome to the Units tutorial! Let's learn about different unit types.",
-                highlight: '.tutorial-card-container',
-                action: 'showHand',
-                requiredAction: null
-            },
-            {
-                message: "This is a basic unit card.",
-                highlight: '.card',
-                action: 'showHand',
-                requiredAction: null
-            },
-            {
-                message: "Notice its raw combat value. This is what your unit uses to fight!",
-                highlight: '.card',
-                action: 'highlightStats',
-                requiredAction: null
-            },
-            {
-                message: "As well as its raw resource value, these are the resources you need to win the game!",
-                highlight: '.card',
-                action: 'highlightStats',
-                requiredAction: null
-            },
-            {
-                message: "Try placing this unit in one of your zones.",
-                highlight: '.player-zone',
-                action: 'enableDrag',
-                requiredAction: 'placeCard'
-            },
-            {
-                message: "Prepare for confrontation!",
-                highlight: '.ai-zone',
-                action: null,
-                requiredAction: null
-            },
-            {
-                message: "Uh oh, it seems like your opponent sees you as a joke...",
-                highlight: '.card',
-                action: 'playAICard',
-                requiredAction: null
-            },
-            {
-                message: "You better leave them a lasting impression!",
-                highlight: '.card',
-                action: 'startConfrontation',
-                requiredAction: null
-            }
-        ]
-    },
-    'lands': {
-        steps: [
-            {
-                message: "Welcome to the lands tutorial! Here you'll learn how to use the lands to your advantage.",
-                highlight: '.tutorial-card-container',
-                action: 'showHand',
-                requiredAction: null
-            },
-            {
-                message: "This is a land card. It provides resources when placed.",
-                highlight: '.tutorial-card-container',
-                action: 'showHand',
-                requiredAction: null
-            },
-            {
-                message: "Place your land card in any zone.",
-                highlight: '.player-zone',
-                action: 'enableDrag',
-                requiredAction: 'placeCard'
-            },
-            {
-                message: "Great! Land cards generate resources each turn.",
-                highlight: '.player-resources',
-                action: 'updateResources',
-                requiredAction: null
-            },
-            {
-                message: "Your opponent has placed their card.",
-                highlight: '.ai-zone',
-                action: 'playAICard',
-                requiredAction: null
-            },
-            {
-                message: "Let's see how the resources affect the battle!",
-                highlight: '.card',
-                action: 'startConfrontation',
-                requiredAction: null
-            }
-        ]
-    }
-    // Add more tutorial types as needed
-};
+// Remove the tutorialConfigs object from here and update the reference
+function getTutorialSteps() {
+    const tutorialType = getTutorialType(gameState.selectedTutorialStage);
+    return tutorialConfigs[tutorialType]?.steps || tutorialConfigs['units'].steps;
+}
 
 // Highlight control functions
 function highlightElement(selector) {
@@ -420,6 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
     startGameLoop();
     setupProgressControls();
     initializeTutorialCards();
+    
+    // Get tutorial steps from config
+    gameState.tutorialSteps = getTutorialSteps();
 });
 
 // Add these functions after the tutorialConfigs declaration
