@@ -1,5 +1,5 @@
 const stages = [
-    { 
+    { // Units
         x: 900, y: 400, 
         label: "Units", 
         rewards: {
@@ -13,54 +13,61 @@ const stages = [
             cards: [12, 13]
         }
     },
-    { 
+    { // Power-Ups
         x: 1500, y: 300, 
         label: "Power-Ups", 
         rewards: {
-            cards: [14, 15]
+            cards: [15, 19]
         }
     },
-    { x: 1800, y: 700, 
+    { // Civilisations
+        x: 1800, y: 700, 
         label: "Civilisations",
         rewards: {
-            cards: [8, 2]
+            cards: [2, 3]
         }
     },
-    { x: 2100, y: 200, 
+    { // Combat basics
+        x: 2100, y: 200, 
         label: "Combat basics",
         rewards: {
-            coins: 100
+            coins: 10
         }
     },
-    { x: 2400, y: 500, 
+    { // Effects
+        x: 2400, y: 500, 
         label: "Effects",
         rewards: {
-            cards: [1, 2]
+            cards: [5, 6]
         }
     },
-    { x: 2600, y: 800, 
+    { // Deck Building
+        x: 2600, y: 800, 
         label: "Deck Building",
         rewards: {
-            cards: [1, 2]
+            cards: [0, 4]
         }
     },
-    { x: 2800, y: 300, 
+    { // Strategy Basics
+        x: 2800, y: 300, 
         label: "Strategy Basics",
         rewards: {
-            coins: 100
+            coins: 10
         }
     },
-    { x: 3000, y: 600, 
+    { // Advanced Tactics
+        x: 3000, y: 600, 
         label: "Advanced Tactics",
         rewards: {
-            cards: [1, 2]
+            cards: [20, 21]
         }
     },
-    { x: 3200, y: 400, 
+    { // Final Challenge
+        x: 3200, y: 400, 
         label: "Final Challenge",
         rewards: {
-            cards: [1],
-            coins: 500
+            cards: [7, 21, 22, 14, 16],
+            coins: 50
         }
     }
 ]; 

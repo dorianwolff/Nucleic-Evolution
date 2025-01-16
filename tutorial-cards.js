@@ -28,7 +28,7 @@ const tutorialCards = [
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/06.png' },
     
-    { id: 7, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 6, combat: 8,rawResource: 6, rawCombat: 8, placement: 1, status: [], cardName: 'Sylph',
+    { id: 7, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: -6, combat: 8,rawResource: -6, rawCombat: 8, placement: 1, status: [], cardName: 'Skull King',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/07.png' },
 
@@ -48,21 +48,49 @@ const tutorialCards = [
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/11.png' },
 
-    { id: 12, name: 'Power Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Staff',
+    { id: 12, name: 'Power-Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Staff',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/12.png' },
     
-    { id: 13, name: 'Power Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Katana',
+    { id: 13, name: 'Power-Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Katana',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/13.png' },
 
-    { id: 14, name: 'Civilization Card', type: 'civilization', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Assassination',
+    { id: 14, name: 'Field', type: 'civilization', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Assassination',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/14.png' },
     
     { id: 15, name: 'Civilization Card', type: 'civilization', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Leap',
         effect: [['None']],
         image: 'Individual_Cards/Tutorial/fronts/15.png' },
+
+    { id: 16, name: 'Land Card', type: 'land', faction: ['basic'], resource: 9, combat: 0,rawResource: 9, rawCombat: 0, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/16.png' },
+
+    { id: 17, name: 'Power-Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/17.png' },
+
+    { id: 18, name: 'Power-Up Card', type: 'power up', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/18.png' },
+
+    { id: 19, name: 'Field', type: 'civilization', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/19.png' },
+
+    { id: 20, name: 'Civilization Card', type: 'civilization', faction: ['basic'], resource: 0, combat: 0,rawResource: 0, rawCombat: 0, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/20.png' },
+
+    { id: 21, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 2, combat: 2,rawResource: 2, rawCombat: 2, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/21.png' },
+
+    { id: 22, name: 'Unit Card', type: 'unit', faction: ['basic'], resource: 4, combat: 1,rawResource: 4, rawCombat: 1, placement: 1, status: [], cardName: 'Wanderer\'s Route',
+        effect: [['None']],
+        image: 'Individual_Cards/Tutorial/fronts/22.png' },
 ];
 
 window.tutorialCards = tutorialCards;
