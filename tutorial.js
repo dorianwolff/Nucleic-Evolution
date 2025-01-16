@@ -88,10 +88,10 @@ const tutorialConfigs = {
             }
         ]
     },
-    'combat': {
+    'lands': {
         steps: [
             {
-                message: "Welcome to combat training! Here you'll learn how battles work.",
+                message: "Welcome to the lands tutorial! Here you'll learn how to use the lands to your advantage.",
                 highlight: '.game-area',
                 action: null,
                 requiredAction: null
@@ -106,6 +106,12 @@ const tutorialConfigs = {
                 message: "Units attack the zone directly in front of them.",
                 highlight: '.ai-zone',
                 action: 'showAttackPath',
+                requiredAction: null
+            },
+            {
+                message: "You better leave them a lasting impression!",
+                highlight: '.card',
+                action: 'startConfrontation',
                 requiredAction: null
             }
         ]

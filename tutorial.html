@@ -659,15 +659,16 @@
             container.scrollLeft = currentStage.x - (container.clientWidth / 2);
         }
 
-        function handleStageClick(index) {
-            const progress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
-            if (index <= progress) {
-                const stage = stages[index];
+        function handleStageClick(stageIndex) {
+            const currentProgress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
+            
+            if (stageIndex <= currentProgress) {
+                // Store the selected stage
+                localStorage.setItem('selectedTutorialStage', stageIndex.toString());
                 
-                // Get the current profile data and tutorial deck
-                let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                profileData.decks = profileData.decks || {};
-                const tutorialDeck = profileData.decks.tutorial || {
+                // Get the tutorial deck
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                const tutorialDeck = profileData.decks?.tutorial || {
                     name: "Tutorial Deck",
                     cards: [],
                     starCard: tutorialCards.find(card => card.id === 9)
@@ -676,58 +677,8 @@
                 // Store the tutorial deck for the game
                 localStorage.setItem('tutorialDeck', JSON.stringify(tutorialDeck));
                 
-                // Handle rewards if not claimed
-                if (stage.rewards) {
-                    const claimedRewards = JSON.parse(localStorage.getItem('claimedRewards') || '{}');
-                    
-                    if (!claimedRewards[index]) {
-                        // Handle coin rewards with animation
-                        if (stage.rewards.coins) {
-                            const rect = event.target.getBoundingClientRect();
-                            const clickX = rect.left + (rect.width / 2);
-                            const clickY = rect.top + (rect.height / 2);
-                            
-                            profileData.coins = (profileData.coins || 0) + stage.rewards.coins;
-                            animateCoinsGain(stage.rewards.coins, clickX, clickY);
-                        }
-                        
-                        // Save updated profile data
-                        localStorage.setItem('profileData', JSON.stringify(profileData));
-                        updateCoinsDisplay();
-                        
-                        // Mark rewards as claimed
-                        claimedRewards[index] = true;
-                        localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
-                    }
-                }
-                
-                // Store the selected stage and redirect to the battle
-                localStorage.setItem('selectedTutorialStage', index);
+                // Navigate to the tutorial playing page
                 window.location.href = 'tutorial-playing.html';
-
-                // After stage completion
-                const stageElement = document.querySelector(`.stage[data-index="${index}"]`);
-                if (stageElement) {
-                    // Remove purple highlight from current stage
-                    stageElement.classList.remove('unlocked-node');
-                    // Add green completion color
-                    stageElement.classList.add('completed-node');
-                    
-                    // Update next stage to purple if it exists and isn't the boss
-                    const nextIndex = index + 1;
-                    if (nextIndex < stages.length - 1) { // Check if not the last stage
-                        const nextStage = document.querySelector(`.stage[data-index="${nextIndex}"]`);
-                        if (nextStage) {
-                            nextStage.classList.add('unlocked-node');
-                        }
-                    }
-                }
-
-                // Update progress
-                if (index >= progress) {
-                    localStorage.setItem('tutorialProgress', (index + 1).toString());
-                    updateProgressDisplay();
-                }
             }
         }
 
@@ -1028,7 +979,10 @@
             const progress = parseInt(localStorage.getItem('tutorialProgress')) || 0;
             
             document.querySelectorAll('.stage').forEach((node, index) => {
-                if (index < progress) {
+                // Check if the stage was actually completed via checkTutorialCompletion
+                const isCompleted = localStorage.getItem(`tutorial_${index}_completed`) === 'true';
+                
+                if (index < progress && isCompleted) {
                     node.classList.add('completed-node');
                     // Add completion marker
                     if (!node.querySelector('.completion-marker')) {

@@ -3,7 +3,7 @@ const stages = [
         x: 900, y: 400, 
         label: "Units", 
         rewards: {
-            cards: [10, 11]
+            cards: [8, 10, 11]
         }
     },
     { 

@@ -36,47 +36,76 @@
     document.addEventListener('DOMContentLoaded', () => {
         setupNavbar();
         
-        // Get the current profile data
-        let profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-        profileData.decks = profileData.decks || {};
-        
-        // Get the tutorial deck from profile data instead of separate storage
-        const tutorialDeck = profileData.decks.tutorial;
-        if (!tutorialDeck || !tutorialDeck.starCard) {
-            console.error('Tutorial deck not found in profile, initializing with default deck');
-            // Initialize with default deck
-            const defaultDeck = {
-                name: "Tutorial Deck",
-                cards: [tutorialCards.find(card => card.id === 9)], // Starter card
-                starCard: tutorialCards.find(card => card.id === 9)
-            };
-            profileData.decks.tutorial = defaultDeck;
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-        }
-
         // Get the selected stage configuration
         const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
-        const stageConfig = stages[selectedStage];
+        const stageConfig = tutorialStages[selectedStage];
         
         if (!stageConfig) {
             console.error('Stage configuration not found');
             return;
         }
 
-        // Set up the AI deck with a default star card
-        const aiDeck = {
-            name: "AI Deck",
-            cards: stageConfig.aiDeck?.cards || [],
-            starCard: tutorialCards.find(card => card.id === 1) // Default AI star card
-        };
+        // Get the tutorial deck from localStorage or create default
+        const tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
+        if (!tutorialDeck || !tutorialDeck.starCard) {
+            console.error('Tutorial deck not found or invalid, initializing with default deck');
+            const defaultDeck = {
+                name: "Tutorial Deck",
+                cards: [tutorialCards.find(card => card.id === 9)], // Starter card
+                starCard: tutorialCards.find(card => card.id === 9)
+            };
+            localStorage.setItem('tutorialDeck', JSON.stringify(defaultDeck));
+        }
 
-        // Store decks for the game
-        localStorage.setItem('tutorialPlayerDeck', JSON.stringify(profileData.decks.tutorial));
+        // Use the AI deck from tutorialStages
+        const aiDeck = stageConfig.aiDeck;
+        if (!aiDeck) {
+            console.error('AI deck configuration not found for this stage');
+            return;
+        }
+
+        // Store both decks
+        localStorage.setItem('tutorialPlayerDeck', localStorage.getItem('tutorialDeck'));
         localStorage.setItem('tutorialAIDeck', JSON.stringify(aiDeck));
 
         // Update the display
         displayDecks();
         updateRewardDisplay();
+
+        // Set up the rest of the UI
+        document.getElementById('tutorial-stage-title').textContent = stageConfig.title;
+        document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
+
+        // Set up the player info
+        if (document.getElementById('username')) {
+            const currentUser = localStorage.getItem('currentUser') || 'Player';
+            document.getElementById('username').textContent = currentUser;
+        }
+        
+        if (document.getElementById('deck-name') && stageConfig.playerDeck?.name) {
+            document.getElementById('deck-name').textContent = stageConfig.playerDeck.name;
+        }
+        
+        if (document.getElementById('ai-name')) {
+            document.getElementById('ai-name').textContent = "Tutorial Guide";
+        }
+        
+        if (document.getElementById('ai-deck-name')) {
+            document.getElementById('ai-deck-name').textContent = aiDeck.name;
+        }
+
+        // Show the confrontation screen after a short delay
+        const confrontationScreen = document.getElementById('confrontation-screen');
+        if (confrontationScreen) {
+            setTimeout(() => {
+                confrontationScreen.style.display = 'block';
+            }, 100);
+        }
+
+        // Handle tutorial battle start
+        document.getElementById('start-tutorial').addEventListener('click', () => {
+            window.location.href = 'tutorial-ingame.html';
+        });
     });
 
     // Update the displayDecks function to use profile data
@@ -295,60 +324,60 @@
     }
 
     .rewards-container {
-        text-align: center;
-        padding: 2rem;
-        margin: 2rem auto;
-        max-width: 800px;
-        background-color: #1f2937;
-        border-radius: 12px;
-        border: 3px solid #4a5568;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px auto;
+        max-width: 600px;
     }
 
     .rewards-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #fbbf24;
-        margin-bottom: 1rem;
+        color: white;
+        font-size: 1.2em;
+        text-align: center;
+        margin-bottom: 15px;
     }
 
     .rewards-grid {
         display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .reward-cards {
+        display: flex;
+        gap: 15px;
         flex-wrap: wrap;
+        justify-content: center;
     }
 
     .reward-item {
-        background-color: #2d3748;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 2px solid #4a5568;
-        transition: all 0.3s ease;
+        width: 70px;
+        height: 98px;
+        background-size: cover;
+        border-radius: 5px;
+        border: 2px solid #666;
+        transition: all 0.2s ease;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .reward-item.reward-acquired {
+        border: 3px solid #4CAF50;
+        box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .reward-coins {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        min-width: 120px;
+        gap: 8px;
+        color: gold;
+        font-size: 1.3em;
+        text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
     }
 
-    .reward-item:hover {
-        transform: translateY(-3px);
-        border-color: #fbbf24;
-        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-    }
-
-    .reward-icon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-
-    .reward-value {
-        text-align: center;
-        margin-top: 0.5rem;
+    .coin-icon {
+        font-size: 1.2em;
     }
 
     /* Update the deck card hover styles */
@@ -404,18 +433,31 @@
   <div class="rewards-container">
     <h3 class="rewards-title">Battle Rewards</h3>
     <div class="rewards-grid">
-        <div class="reward-item">
-            <div class="reward-icon">💰</div>
-            <div class="reward-value">100 Coins</div>
-        </div>
-        <div class="reward-item">
-            <div class="reward-icon">🎴</div>
-            <div class="reward-value">New Card</div>
-        </div>
-        <div class="reward-item">
-            <div class="reward-icon">📜</div>
-            <div class="reward-value">Tutorial Complete</div>
-        </div>
+        <script>
+            // Get the selected stage and its rewards
+            const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+            const stage = stages[selectedStage];
+            
+            if (stage && stage.rewards) {
+                document.write(`
+                    ${stage.rewards.cards ? `
+                        <div class="reward-cards">
+                            ${stage.rewards.cards.map(cardId => {
+                                const card = tutorialCards.find(c => c.id === cardId);
+                                return card ? `
+                                    <div class="reward-item" style="background-image: url('${card.image}')"></div>
+                                ` : '';
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                    ${stage.rewards.coins ? `
+                        <div class="reward-coins">
+                            <span class="coin-icon">🪙</span> ${stage.rewards.coins}
+                        </div>
+                    ` : ''}
+                `);
+            }
+        </script>
     </div>
   </div>
 
@@ -430,10 +472,34 @@
   <script>
     const tutorialStages = [
       {
-        title: "Basic Combat",
+        title: "Units",
         description: "Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.",
         aiDeck: {
-          name: "Tutorial Deck 1",
+          name: "AI Deck 1",
+          starCard: tutorialCards.find(card => card.id === 1),
+          cards: [
+            tutorialCards.find(card => card.id === 1)
+          ]
+        }
+      },
+      {
+        title: "Lands",
+        description: "Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.",
+        aiDeck: {
+          name: "AI Deck 2",
+          starCard: tutorialCards.find(card => card.id === 0),
+          cards: [
+            tutorialCards.find(card => card.id === 0),
+            tutorialCards.find(card => card.id === 1),
+            tutorialCards.find(card => card.id === 2)
+          ]
+        }
+      },
+      {
+        title: "Power-Ups",
+        description: "Learn the basic combat rules of the game. We'll start with a simple deck focused on combat.",
+        aiDeck: {
+          name: "AI Deck 3",
           starCard: tutorialCards.find(card => card.id === 0),
           cards: [
             tutorialCards.find(card => card.id === 0),
@@ -448,11 +514,19 @@
     document.addEventListener('DOMContentLoaded', () => {
       setupNavbar();
       
-      // Get the tutorial deck from localStorage
+      // Get the selected stage configuration
+      const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
+      const stageConfig = tutorialStages[selectedStage];
+      
+      if (!stageConfig) {
+          console.error('Stage configuration not found');
+          return;
+      }
+
+      // Get the tutorial deck from localStorage or create default
       const tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
       if (!tutorialDeck || !tutorialDeck.starCard) {
           console.error('Tutorial deck not found or invalid, initializing with default deck');
-          // Initialize with default deck
           const defaultDeck = {
               name: "Tutorial Deck",
               cards: [tutorialCards.find(card => card.id === 9)], // Starter card
@@ -461,21 +535,12 @@
           localStorage.setItem('tutorialDeck', JSON.stringify(defaultDeck));
       }
 
-      // Get the selected stage configuration
-      const selectedStage = parseInt(localStorage.getItem('selectedTutorialStage')) || 0;
-      const stageConfig = stages[selectedStage];
-      
-      if (!stageConfig) {
-          console.error('Stage configuration not found');
+      // Use the AI deck from tutorialStages
+      const aiDeck = stageConfig.aiDeck;
+      if (!aiDeck) {
+          console.error('AI deck configuration not found for this stage');
           return;
       }
-
-      // Set up the AI deck with a default star card
-      const aiDeck = {
-          name: "AI Deck",
-          cards: stageConfig.aiDeck?.cards || [],
-          starCard: tutorialCards.find(card => card.id === 1) // Default AI star card
-      };
 
       // Store both decks
       localStorage.setItem('tutorialPlayerDeck', localStorage.getItem('tutorialDeck'));
@@ -490,34 +555,29 @@
       document.getElementById('tutorial-stage-description').textContent = stageConfig.description;
 
       // Set up the player info
-      const usernameElement = document.getElementById('username');
-      const deckNameElement = document.getElementById('deck-name');
-      const aiNameElement = document.getElementById('ai-name');
-      const aiDeckNameElement = document.getElementById('ai-deck-name');
-      
-      if (usernameElement) {
-        const currentUser = localStorage.getItem('currentUser') || 'Player';
-        usernameElement.textContent = currentUser;
+      if (document.getElementById('username')) {
+          const currentUser = localStorage.getItem('currentUser') || 'Player';
+          document.getElementById('username').textContent = currentUser;
       }
       
-      if (deckNameElement && stageConfig.playerDeck && stageConfig.playerDeck.name) {
-        deckNameElement.textContent = stageConfig.playerDeck.name;
+      if (document.getElementById('deck-name') && stageConfig.playerDeck?.name) {
+          document.getElementById('deck-name').textContent = stageConfig.playerDeck.name;
       }
       
-      if (aiNameElement) {
-        aiNameElement.textContent = "Tutorial Guide";
+      if (document.getElementById('ai-name')) {
+          document.getElementById('ai-name').textContent = "Tutorial Guide";
       }
       
-      if (aiDeckNameElement && stageConfig.aiDeck && stageConfig.aiDeck.name) {
-        aiDeckNameElement.textContent = stageConfig.aiDeck.name;
+      if (document.getElementById('ai-deck-name')) {
+          document.getElementById('ai-deck-name').textContent = aiDeck.name;
       }
 
       // Show the confrontation screen after a short delay
       const confrontationScreen = document.getElementById('confrontation-screen');
       if (confrontationScreen) {
-        setTimeout(() => {
-          confrontationScreen.style.display = 'block';
-        }, 100);
+          setTimeout(() => {
+              confrontationScreen.style.display = 'block';
+          }, 100);
       }
 
       // Handle tutorial battle start
