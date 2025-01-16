@@ -6,7 +6,7 @@ const stages = [
             cards: [8, 10, 11]
         }
     },
-    { 
+    { // Lands
         x: 1200, y: 600, 
         label: "Lands", 
         rewards: {
