@@ -36,6 +36,9 @@ let originalPosition = null;
 let canProgress = true;
 const STEP_COOLDOWN = 1500; // 1.5 seconds in milliseconds
 
+// Add this at the top with other game state variables
+let confrontationComplete = false;
+
 // Tutorial configurations for different types
 const tutorialConfigs = {
     'units': {
@@ -253,6 +256,7 @@ function executeTutorialAction(action) {
             playOpponentStarCard();
             break;
         case 'startConfrontation':
+            confrontationComplete = false; // Reset the flag
             revealCardsAndCombat(0);
             break;
     }
@@ -290,6 +294,10 @@ function handleProgressAttempt() {
     
     const currentStep = gameState.tutorialSteps[gameState.tutorialStep];
     if (!currentStep?.requiredAction) {
+        // Only allow progress if we're not in confrontation or if confrontation is complete
+        if (currentStep?.action === 'startConfrontation' && !confrontationComplete) {
+            return;
+        }
         startProgressCooldown();
         nextTutorialStep();
     }
@@ -977,7 +985,11 @@ function playOpponentStarCard() {
 
 // Add this function to handle card revealing and combat in tutorial
 function revealCardsAndCombat(zoneIndex = 0) {
-    if (zoneIndex >= 3) return; // End if we've checked all zones
+    if (zoneIndex >= 3) {
+        // All zones have been processed
+        confrontationComplete = true;
+        return;
+    }
 
     // Get the current zone elements
     const playerZone = document.querySelector(`#player-${['left', 'center', 'right'][zoneIndex]}`);
@@ -1026,15 +1038,11 @@ function revealCardsAndCombat(zoneIndex = 0) {
             return;
         }
 
-        // Remove hover effect during flip
-        card.style.pointerEvents = 'none';
-
         setTimeout(() => {
             card.style.backgroundImage = `url('${card.dataset.realImage}')`;
             card.style.backgroundSize = 'cover';
             card.dataset.isFaceDown = 'false';
             addCardNumbers(card);
-            card.style.pointerEvents = 'auto';
             flipCardsSequentially(cards, index + 1, callback);
         }, 1000);
     }
@@ -1043,10 +1051,8 @@ function revealCardsAndCombat(zoneIndex = 0) {
     flipCardsSequentially(Array.from(unitCards), 0, () => {
         flipCardsSequentially(Array.from(landCards), 0, () => {
             flipCardsSequentially(Array.from(powerUpCards), 0, () => {
-                // After all cards are revealed, wait 1.5s then do combat
                 setTimeout(() => {
                     resolveCombat(zoneIndex);
-                    // Move to next zone after combat
                     setTimeout(() => {
                         revealCardsAndCombat(zoneIndex + 1);
                     }, 1500);
