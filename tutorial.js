@@ -39,11 +39,102 @@ const STEP_COOLDOWN = 1500; // 1.5 seconds in milliseconds
 // Add this at the top with other game state variables
 let confrontationComplete = false;
 
-// Remove the tutorialConfigs object from here and update the reference
-function getTutorialSteps() {
-    const tutorialType = getTutorialType(gameState.selectedTutorialStage);
-    return tutorialConfigs[tutorialType]?.steps || tutorialConfigs['units'].steps;
-}
+// Tutorial configurations for different types
+const tutorialConfigs = {
+    'units': {
+        steps: [
+            {
+                message: "Welcome to the Units tutorial! Let's learn about different unit types.",
+                highlight: '.tutorial-card-container',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "This is a basic unit card.",
+                highlight: '.card',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "Notice its raw combat value. This is what your unit uses to fight!",
+                highlight: '.card',
+                action: 'highlightStats',
+                requiredAction: null
+            },
+            {
+                message: "As well as its raw resource value, these are the resources you need to win the game!",
+                highlight: '.card',
+                action: 'highlightStats',
+                requiredAction: null
+            },
+            {
+                message: "Try placing this unit in one of your zones.",
+                highlight: '.player-zone',
+                action: 'enableDrag',
+                requiredAction: 'placeCard'
+            },
+            {
+                message: "Prepare for confrontation!",
+                highlight: '.ai-zone',
+                action: null,
+                requiredAction: null
+            },
+            {
+                message: "Uh oh, it seems like your opponent sees you as a joke...",
+                highlight: '.card',
+                action: 'playAICard',
+                requiredAction: null
+            },
+            {
+                message: "You better leave them a lasting impression!",
+                highlight: '.card',
+                action: 'startConfrontation',
+                requiredAction: null
+            }
+        ]
+    },
+    'lands': {
+        steps: [
+            {
+                message: "Welcome to the lands tutorial! Here you'll learn how to use the lands to your advantage.",
+                highlight: '.tutorial-card-container',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "This is a land card. It provides resources when placed.",
+                highlight: '.tutorial-card-container',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "Place your land card in any zone.",
+                highlight: '.player-zone',
+                action: 'enableDrag',
+                requiredAction: 'placeCard'
+            },
+            {
+                message: "Great! Land cards generate resources each turn.",
+                highlight: '.player-resources',
+                action: 'updateResources',
+                requiredAction: null
+            },
+            {
+                message: "Your opponent has placed their card.",
+                highlight: '.ai-zone',
+                action: 'playAICard',
+                requiredAction: null
+            },
+            {
+                message: "Let's see how the resources affect the battle!",
+                highlight: '.card',
+                action: 'startConfrontation',
+                requiredAction: null
+            }
+        ]
+    }
+    // Add more tutorial types as needed
+};
 
 // Highlight control functions
 function highlightElement(selector) {
@@ -231,19 +322,41 @@ function getTutorialType(stageIndex) {
 
 // Update the handleDragEnd function to include tutorial progression
 function handleDragEnd(e) {
-    if (!isDragging) return;
-    
-    const zone = getDropZone(e.clientX, e.clientY);
-    if (zone && isValidZone(zone)) {
-        placeCard(gameState.draggedCard, zone);
-        checkStepCompletion('placeCard');
-    } else {
-        returnCardToHand();
-    }
-
+    e.preventDefault();
     isDragging = false;
-    gameState.draggedCard.classList.remove('dragging');
-    removeZoneHighlights();
+    
+    // If the card wasn't dropped in a valid zone, return it to its original position
+    if (gameState.draggedCard && originalParent) {
+        const zones = document.querySelectorAll('.player-zone');
+        let wasDropped = false;
+        
+        zones.forEach(zone => {
+            if (zone.contains(gameState.draggedCard)) {
+                wasDropped = true;
+            }
+        });
+        
+        if (!wasDropped) {
+            // Return the card to the tutorial container
+            originalParent.appendChild(gameState.draggedCard);
+            if (originalPosition) {
+                gameState.draggedCard.style.position = '';
+                gameState.draggedCard.style.left = '';
+                gameState.draggedCard.style.top = '';
+                gameState.draggedCard.style.transform = '';
+            }
+        }
+    }
+    
+    // Reset drag state
+    gameState.draggedCard = null;
+    originalParent = null;
+    originalPosition = null;
+    
+    // Remove all zone highlights
+    document.querySelectorAll('.zone').forEach(zone => {
+        zone.classList.remove('highlight');
+    });
 }
 
 // Add this function after the gameState declaration
@@ -329,9 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startGameLoop();
     setupProgressControls();
     initializeTutorialCards();
-    
-    // Get tutorial steps from config
-    gameState.tutorialSteps = getTutorialSteps();
 });
 
 // Add these functions after the tutorialConfigs declaration
@@ -414,32 +524,22 @@ function getTutorialCardData(element) {
 function handleDragStart(e) {
     if (!e.target.classList.contains('draggable')) return;
     
+    isDragging = true;
     gameState.draggedCard = e.target;
     
-    // Hide the card viewer/container
-    const cardContainer = document.querySelector('.tutorial-card-container');
-    if (cardContainer) {
-        cardContainer.style.visibility = 'hidden';
+    // Store the original position and parent
+    originalParent = e.target.parentNode;
+    const rect = e.target.getBoundingClientRect();
+    originalPosition = {
+        left: rect.left,
+        top: rect.top
+    };
+    
+    // Set drag image and data
+    if (e.dataTransfer) {
+        e.dataTransfer.setData('text/plain', e.target.dataset.cardData || '{}');
+        e.dataTransfer.effectAllowed = 'move';
     }
-    
-    // Setup drag effect
-    e.target.classList.add('dragging');
-    e.target.style.opacity = '0.4';
-    
-    // Get and store card data
-    const cardData = getTutorialCardData(e.target);
-    if (cardData) {
-        try {
-            const jsonData = JSON.stringify(cardData);
-            e.dataTransfer.setData('application/json', jsonData);
-            e.dataTransfer.setData('text/plain', jsonData);
-            gameState.draggedCard.dataset.cardData = jsonData;
-        } catch (error) {
-            console.error('Error in drag start:', error);
-        }
-    }
-    
-    e.dataTransfer.effectAllowed = 'move';
 }
 
 // Update handleTouchStart to use the same card data
@@ -694,6 +794,7 @@ function handleDrop(e) {
     zone.classList.remove('highlight');
     
     if (!zone.classList.contains('player-zone')) {
+        // Invalid drop zone - card will be returned in handleDragEnd
         return;
     }
     
