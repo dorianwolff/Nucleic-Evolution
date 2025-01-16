@@ -66,7 +66,7 @@ const stages = [
         x: 3200, y: 400, 
         label: "Final Challenge",
         rewards: {
-            cards: [7, 21, 22, 14, 16],
+            cards: [7, 23, 22, 14, 16],
             coins: 50
         }
     }
