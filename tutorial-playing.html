@@ -45,16 +45,27 @@
             return;
         }
 
-        // Get the tutorial deck from localStorage or create default
+        // Initialize the tutorial deck based on the stage
         const tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
-        if (!tutorialDeck || !tutorialDeck.starCard) {
-            console.error('Tutorial deck not found or invalid, initializing with default deck');
+        if (!tutorialDeck) {
+            console.error('Tutorial deck not found, initializing with stage-specific deck');
             const defaultDeck = {
                 name: "Tutorial Deck",
-                cards: [tutorialCards.find(card => card.id === 9)], // Starter card
+                cards: getStageSpecificCards(selectedStage),
                 starCard: tutorialCards.find(card => card.id === 9)
             };
             localStorage.setItem('tutorialDeck', JSON.stringify(defaultDeck));
+        }
+
+        // Helper function to get stage-specific cards
+        function getStageSpecificCards(stageIndex) {
+            const stageCards = {
+                0: [tutorialCards.find(card => card.id === 9)], // Units tutorial
+                1: [tutorialCards.find(card => card.id === 10)], // Lands tutorial
+                2: [tutorialCards.find(card => card.id === 14)], // Power-ups tutorial
+                // Add more stage-specific configurations
+            };
+            return stageCards[stageIndex] || [tutorialCards.find(card => card.id === 9)];
         }
 
         // Use the AI deck from tutorialStages
@@ -523,16 +534,27 @@
           return;
       }
 
-      // Get the tutorial deck from localStorage or create default
+      // Initialize the tutorial deck based on the stage
       const tutorialDeck = JSON.parse(localStorage.getItem('tutorialDeck'));
-      if (!tutorialDeck || !tutorialDeck.starCard) {
-          console.error('Tutorial deck not found or invalid, initializing with default deck');
+      if (!tutorialDeck) {
+          console.error('Tutorial deck not found, initializing with stage-specific deck');
           const defaultDeck = {
               name: "Tutorial Deck",
-              cards: [tutorialCards.find(card => card.id === 9)], // Starter card
+              cards: getStageSpecificCards(selectedStage),
               starCard: tutorialCards.find(card => card.id === 9)
           };
           localStorage.setItem('tutorialDeck', JSON.stringify(defaultDeck));
+      }
+
+      // Helper function to get stage-specific cards
+      function getStageSpecificCards(stageIndex) {
+          const stageCards = {
+              0: [tutorialCards.find(card => card.id === 9)], // Units tutorial
+              1: [tutorialCards.find(card => card.id === 10)], // Lands tutorial
+              2: [tutorialCards.find(card => card.id === 14)], // Power-ups tutorial
+              // Add more stage-specific configurations
+          };
+          return stageCards[stageIndex] || [tutorialCards.find(card => card.id === 9)];
       }
 
       // Use the AI deck from tutorialStages

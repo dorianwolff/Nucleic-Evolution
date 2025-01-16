@@ -21,6 +21,8 @@ let gameState = {
     dragStartX: 0,
     dragStartY: 0,
     tutorialRewardsGiven: {}, // Track which tutorials have given rewards
+    selectedTutorialStage: parseInt(localStorage.getItem('selectedTutorialStage')) || 0,
+    tutorialDeck: null,
 };
 
 // Remove the global draggedCard variable since it's in gameState
@@ -92,24 +94,36 @@ const tutorialConfigs = {
         steps: [
             {
                 message: "Welcome to the lands tutorial! Here you'll learn how to use the lands to your advantage.",
-                highlight: '.game-area',
-                action: null,
+                highlight: '.tutorial-card-container',
+                action: 'showHand',
                 requiredAction: null
             },
             {
-                message: "Place your unit card in a zone facing an enemy unit.",
+                message: "This is a land card. It provides resources when placed.",
+                highlight: '.tutorial-card-container',
+                action: 'showHand',
+                requiredAction: null
+            },
+            {
+                message: "Place your land card in any zone.",
                 highlight: '.player-zone',
                 action: 'enableDrag',
                 requiredAction: 'placeCard'
             },
             {
-                message: "Units attack the zone directly in front of them.",
-                highlight: '.ai-zone',
-                action: 'showAttackPath',
+                message: "Great! Land cards generate resources each turn.",
+                highlight: '.player-resources',
+                action: 'updateResources',
                 requiredAction: null
             },
             {
-                message: "You better leave them a lasting impression!",
+                message: "Your opponent has placed their card.",
+                highlight: '.ai-zone',
+                action: 'playAICard',
+                requiredAction: null
+            },
+            {
+                message: "Let's see how the resources affect the battle!",
                 highlight: '.card',
                 action: 'startConfrontation',
                 requiredAction: null
@@ -289,13 +303,13 @@ function startProgressCooldown() {
 }
 
 // Helper function to determine tutorial type from stage number
-function getTutorialType(stageNumber) {
+function getTutorialType(stageIndex) {
     const tutorialTypes = {
         0: 'units',
-        1: 'combat',
+        1: 'lands',
         // Add more mappings as needed
     };
-    return tutorialTypes[stageNumber] || 'units';
+    return tutorialTypes[stageIndex] || 'units';
 }
 
 // Update the handleDragEnd function to include tutorial progression
@@ -323,12 +337,29 @@ function renderPlayerHand(card) {
     // Clear existing content
     cardContainer.innerHTML = '';
     
+    // Get the player's deck from localStorage
+    const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
+    if (!tutorialPlayerDeck || !tutorialPlayerDeck.cards || !tutorialPlayerDeck.cards.length) {
+        console.error('Player deck not found or empty');
+        return;
+    }
+
     // Only show card for units tutorial
-    if (gameState.selectedTutorial === 'units' && card) {
-        const cardElement = createCardElement(card);
+    if (gameState.selectedTutorial === 'units') {
+        const tutorialCard = tutorialPlayerDeck.cards[0];
+        const cardElement = createCardElement(tutorialCard);
         cardContainer.appendChild(cardElement);
         cardContainer.style.display = 'block';
-    } else {
+    } 
+    else if (gameState.selectedTutorial === 'lands') {
+        const tutorialCard = tutorialPlayerDeck.cards.find(card => card.id === 10);
+        if (tutorialCard) {
+            const cardElement = createCardElement(tutorialCard);
+            cardContainer.appendChild(cardElement);
+            cardContainer.style.display = 'block';
+        }
+    }
+    else {
         cardContainer.style.display = 'none';
     }
 }
@@ -380,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDragAndDrop();
     startGameLoop();
     setupProgressControls();
+    initializeTutorialCards();
 });
 
 // Add these functions after the tutorialConfigs declaration
@@ -609,26 +641,7 @@ function initializeGame() {
             cardContainer.style.display = 'block';
         }
     }
-}
-
-// Add this function near the other UI update functions
-function updateTutorialDialogue(message) {
-    const dialogueElement = document.getElementById('tutorial-dialogue');
-    if (dialogueElement) {
-        dialogueElement.textContent = message;
-    }
-}
-
-// Update renderPlayerHand to use the player's deck card
-function renderPlayerHand() {
-    const cardContainer = document.querySelector('.tutorial-card-container');
-    if (!cardContainer) return;
-    
-    // Clear existing content
-    cardContainer.innerHTML = '';
-    
-    // Only show card for units tutorial
-    if (gameState.selectedTutorial === 'units') {
+    else if (getTutorialType(selectedStage) === 'lands') {
         // Get the player's deck from localStorage
         const tutorialPlayerDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
         if (!tutorialPlayerDeck || !tutorialPlayerDeck.cards || !tutorialPlayerDeck.cards.length) {
@@ -636,13 +649,25 @@ function renderPlayerHand() {
             return;
         }
 
-        // Use the first card from the player's deck
-        const tutorialCard = tutorialPlayerDeck.cards[0];
-        const cardElement = createCardElement(tutorialCard);
-        cardContainer.appendChild(cardElement);
-        cardContainer.style.display = 'block';
-    } else {
-        cardContainer.style.display = 'none';
+        // Use the land card (id 10) from the deck
+        const tutorialCard = tutorialPlayerDeck.cards.find(card => card.id === 10);
+        
+        // Initialize the tutorial card
+        const cardContainer = document.querySelector('.tutorial-card-container');
+        if (cardContainer) {
+            cardContainer.innerHTML = '';
+            const cardElement = createCardElement(tutorialCard);
+            cardContainer.appendChild(cardElement);
+            cardContainer.style.display = 'block';
+        }
+    }
+}
+
+// Add this function near the other UI update functions
+function updateTutorialDialogue(message) {
+    const dialogueElement = document.getElementById('tutorial-dialogue');
+    if (dialogueElement) {
+        dialogueElement.textContent = message;
     }
 }
 
@@ -1268,4 +1293,47 @@ function showRewardAnimations(rewards) {
             }, index * 1000); // Stagger card animations
         });
     }
+}
+
+// Add this function to initialize the tutorial cards
+function initializeTutorialCards() {
+    const stage = stages[gameState.selectedTutorialStage];
+    if (!stage) return;
+
+    const tutorialCardContainer = document.querySelector('.tutorial-card-container');
+    if (!tutorialCardContainer) return;
+
+    // Clear existing cards
+    tutorialCardContainer.innerHTML = '';
+
+    // Get the tutorial deck
+    const tutorialDeck = JSON.parse(localStorage.getItem('tutorialPlayerDeck'));
+    if (!tutorialDeck || !tutorialDeck.cards) return;
+
+    // For each tutorial stage, define which cards should be shown
+    const stageCards = {
+        0: [tutorialDeck.cards[0]], // Units tutorial - show starter unit
+        1: [tutorialDeck.cards.find(card => card.type === 'land')], // Lands tutorial
+        2: [tutorialDeck.cards.find(card => card.type === 'powerup')], // Power-ups tutorial
+        // Add more stage-specific card configurations
+    };
+
+    // Get the cards for the current stage
+    const cardsToShow = stageCards[gameState.selectedTutorialStage] || [tutorialDeck.cards[0]];
+
+    // Create and display the cards
+    cardsToShow.forEach(card => {
+        if (!card) return;
+        
+        const cardElement = document.createElement('div');
+        cardElement.className = 'tutorial-card';
+        cardElement.style.backgroundImage = `url('${card.image}')`;
+        cardElement.draggable = true;
+        
+        // Add drag event listeners
+        cardElement.addEventListener('dragstart', handleDragStart);
+        cardElement.addEventListener('dragend', handleDragEnd);
+        
+        tutorialCardContainer.appendChild(cardElement);
+    });
 }
