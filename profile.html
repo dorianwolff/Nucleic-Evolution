@@ -450,7 +450,6 @@
     
     // Calculate tutorial cards
     const tutorialCards = profileData.cards || [];
-    console.log(tutorialCards);
     const uniqueTutorialCards = [...new Set(tutorialCards.map(card => card.id))];
     const tutorialCardsCount = uniqueTutorialCards.length;
     const totalTutorialCards = window.tutorialCards ? window.tutorialCards.length : 6;
@@ -505,8 +504,8 @@
     }
     
     // Update progress
-    const tutorialProgress = Math.round(((profileData.tutorialProgress || 0) / 10) * 100);
-    const campaignProgress = Math.round(((profileData.campaignProgress || 0) / 100) * 100);
+    const tutorialProgress = profileData.tutorialProgress || 0;
+    const campaignProgress = profileData.campaignProgress || 0;
     document.getElementById('tutorial-progress').textContent = `${tutorialProgress}%`;
     document.getElementById('campaign-progress').textContent = `${campaignProgress}%`;
     
@@ -523,7 +522,7 @@
         achievements.account = true;
         
         // Check tutorial completion
-        if (profileData.tutorialProgress === 10) {
+        if (profileData.tutorialProgress === 100) {
             achievements.tutorial = true;
         }
         

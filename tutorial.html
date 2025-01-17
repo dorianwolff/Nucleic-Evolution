@@ -877,6 +877,7 @@
             
             updateNodeColors();
             markCompletedStage();
+            updateProgressDisplay();
         }
 
         // Add this new function to handle stage completion marking
@@ -966,7 +967,9 @@
         function updateProgressDisplay() {
             const totalStages = stages.length;
             const completedStages = parseInt(localStorage.getItem('tutorialProgress')) || 0;
-            const progress = Math.floor((completedStages / totalStages) * 100);
+            const progress = Math.floor((completedStages * 100/ totalStages));
+
+            localStorage.setItem('tutorialProgressPercentage', progress.toString());
             
             const progressDisplay = document.querySelector('.cards-collected');
             if (progressDisplay) {

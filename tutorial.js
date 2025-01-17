@@ -132,8 +132,31 @@ const tutorialConfigs = {
                 requiredAction: null
             }
         ]
+    },
+    'powerUps': {
+        steps: []
+    },
+    'civilisations': {
+        steps: []
+    },
+    'combatBasics': {
+        steps: []
+    },
+    'effects': {
+        steps: []
+    },
+    'deckBuilding': {
+        steps: []
+    },
+    'strategyBasics': {
+        steps: []
+    },
+    'advancedTactics': {
+        steps: []
+    },
+    'finalChallenge': {
+        steps: []
     }
-    // Add more tutorial types as needed
 };
 
 // Highlight control functions
@@ -315,7 +338,14 @@ function getTutorialType(stageIndex) {
     const tutorialTypes = {
         0: 'units',
         1: 'lands',
-        // Add more mappings as needed
+        2: 'powerUps',
+        3: 'civilisations',
+        4: 'combatBasics',
+        5: 'effects',
+        6: 'deckBuilding',
+        7: 'strategyBasics',
+        8: 'advancedTactics',
+        9: 'finalChallenge',
     };
     return tutorialTypes[stageIndex] || 'units';
 }
@@ -389,6 +419,22 @@ function renderPlayerHand(card) {
             cardContainer.style.display = 'block';
         }
     }
+    else if (gameState.selectedTutorial === 'powerUps') {
+        const tutorialCard = tutorialPlayerDeck.cards.find(card => card.id === 13);
+        if (tutorialCard) {
+            const cardElement = createCardElement(tutorialCard);
+            cardContainer.appendChild(cardElement);
+            cardContainer.style.display = 'block';
+        }
+    }
+    else if (gameState.selectedTutorial === 'civilisations') {
+        const tutorialCard = tutorialPlayerDeck.cards.find(card => card.id === 15);
+        if (tutorialCard) {
+            const cardElement = createCardElement(tutorialCard);
+            cardContainer.appendChild(cardElement);
+            cardContainer.style.display = 'block';
+        }
+    }
     else {
         cardContainer.style.display = 'none';
     }
@@ -414,6 +460,7 @@ function createCardElement(cardData) {
     card.appendChild(nameElement);
     
     // Add stats container
+    if (cardData.type === 'unit' || cardData.type === 'land') {
     const statsContainer = document.createElement('div');
     statsContainer.className = 'card-stats';
     
@@ -424,13 +471,14 @@ function createCardElement(cardData) {
     statsContainer.appendChild(resourceElement);
     
     // Add combat value
+    if (cardData.type === 'unit') {
     const combatElement = document.createElement('div');
     combatElement.className = 'combat-value';
     combatElement.textContent = cardData.rawCombat;
     statsContainer.appendChild(combatElement);
-    
+    }
     card.appendChild(statsContainer);
-    
+    }
     return card;
 }
 
