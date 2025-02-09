@@ -297,4 +297,173 @@
     font-size: 14px;
     color: white;
     z-index: 1000;
+}
+
+/* Card Confrontation Animation */
+@keyframes confrontation-swing-left {
+    0% { transform: scale(1) translateX(0); }
+    25% { transform: scale(1.1) translateX(-30px) rotate(-10deg); }
+    50% { transform: scale(1.1) translateX(10px) rotate(5deg); }
+    75% { transform: scale(1.1) translateX(-10px) rotate(-5deg); }
+    100% { transform: scale(1) translateX(0) rotate(0); }
+}
+
+@keyframes confrontation-swing-right {
+    0% { transform: scale(1) translateX(0); }
+    25% { transform: scale(1.1) translateX(30px) rotate(10deg); }
+    50% { transform: scale(1.1) translateX(-10px) rotate(-5deg); }
+    75% { transform: scale(1.1) translateX(10px) rotate(5deg); }
+    100% { transform: scale(1) translateX(0) rotate(0); }
+}
+
+.confronting-left {
+    animation: confrontation-swing-left 1s ease-in-out;
+    z-index: 100;
+}
+
+.confronting-right {
+    animation: confrontation-swing-right 1s ease-in-out;
+    z-index: 100;
+}
+
+@keyframes clash-flash {
+    0% { opacity: 0; }
+    25% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.clash-effect {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    pointer-events: none;
+    animation: clash-flash 0.5s ease-out forwards;
+    z-index: 101;
+}
+
+/* Metallic Circle Animation */
+.metallic-circle {
+    background: linear-gradient(45deg, #b8b8b8, #f0f0f0, #b8b8b8);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Red Resource Circle */
+.resource-confrontation {
+    background-color: #ff4444 !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+/* Victory Radiance Animation */
+@keyframes victory-radiance {
+    0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+    100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+}
+
+.victory-glow {
+    animation: victory-radiance 2s infinite;
+}
+
+/* Defeat Blood Animation */
+@keyframes blood-drop {
+    0% { opacity: 0; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(10px); }
+    100% { opacity: 0; transform: translateY(20px); }
+}
+
+.blood-effect::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,0,0,0.3) 0%, rgba(255,0,0,0) 70%);
+    animation: blood-drop 1s ease-out;
+}
+
+/* Nullification Lightning Effect */
+@keyframes lightning {
+    0% { filter: brightness(1) contrast(1); }
+    25% { filter: brightness(2) contrast(2); }
+    50% { filter: brightness(1) contrast(1); }
+    75% { filter: brightness(1.5) contrast(1.5); }
+    100% { filter: brightness(1) contrast(1); }
+}
+
+.nullified {
+    animation: lightning 0.5s ease-out;
+}
+
+/* Ability Activation Glow */
+@keyframes ability-glow {
+    0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+}
+
+.ability-active {
+    animation: ability-glow 1s ease-out;
+}
+
+/* Effect Switch Animation */
+@keyframes effect-switch {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(0.5); }
+    100% { filter: brightness(1); }
+}
+
+.effect-switch {
+    animation: effect-switch 1s ease-out;
+}
+
+/* Resource/Combat Value Change Animations */
+@keyframes resource-increase {
+    0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+}
+
+@keyframes resource-decrease {
+    0% { box-shadow: 0 0 10px rgba(139, 69, 19, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(139, 69, 19, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(139, 69, 19, 0.5); }
+}
+
+@keyframes combat-increase {
+    0% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+}
+
+@keyframes combat-decrease {
+    0% { box-shadow: 0 0 10px rgba(128, 0, 128, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(128, 0, 128, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(128, 0, 128, 0.5); }
+}
+
+.resource-increasing {
+    animation: resource-increase 1s ease-out;
+}
+
+.resource-decreasing {
+    animation: resource-decrease 1s ease-out;
+}
+
+.combat-increasing {
+    animation: combat-increase 1s ease-out;
+}
+
+.combat-decreasing {
+    animation: combat-decrease 1s ease-out;
+}
+
+/* Type Change Animation */
+@keyframes type-change {
+    0% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(0, 0, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
+}
+
+.type-changing {
+    animation: type-change 1s ease-out;
 } 

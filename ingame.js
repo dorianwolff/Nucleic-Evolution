@@ -910,8 +910,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
     function handleAssemble(callback) {
         if (!lastOpponentCivilizationCard) {
             console.log("No civilization card to copy.");
@@ -1061,8 +1059,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-
-
     function flipCardsSequentially(cards, index, callback) {
         if (index >= cards.length) {
             if (callback) callback();
@@ -1125,61 +1121,69 @@ document.addEventListener('DOMContentLoaded', () => {
         let userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.combat || 0, 10) : 0;
         let opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.combat || 0, 10) : 0;
 
-
-        if (userUnitStatus.includes('applyResourceConfrontation'))
-        {
-            if (userUnitStatus.includes('applyRawForConfrontation'))
-                userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.rawResource || 0, 10) : 0;
-
-            else
-                userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.resource || 0, 10) : 0;
-        }
-        else if (userUnitStatus.includes('applyRawForConfrontation'))
-            userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.rawCombat || 0, 10) : 0;
-
-        if (opponentUnitStatus.includes('applyResourceConfrontation'))
-        {
-            if (opponentUnitStatus.includes('applyRawForConfrontation'))
-                opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawResource || 0, 10) : 0;
-            else
-                opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.resource || 0, 10) : 0;
-        }
-        else if (opponentUnitStatus.includes('applyRawForConfrontation'))
-            opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawCombat || 0, 10) : 0;
-
-        let zoneWinner = null;
-
-        if (userUnitCombat > opponentUnitCombat) {
-            greyOutZone(opponentZone);
-            defeatedUnits.ai.push(opponentUnitCard);
-            applyGlowToLand(opponentZone, 'user');
-            zoneWinner = 'user';
-        } else if (userUnitCombat < opponentUnitCombat) {
-            greyOutZone(userZone);
-            defeatedUnits.user.push(userUnitCard);
-            applyGlowToLand(userZone, 'ai');
-            zoneWinner = 'ai';
-        } else {
-            greyOutTie(userZone);
-            greyOutTie(opponentZone);
-            zoneWinner = 'tie';
-        }
-
-        ifDefeatsCardEffects(zoneIndex, zoneWinner);
-
-        ifDefeatedCardEffects(zoneIndex, zoneWinner);
-
-        reApplyOngoingEffects(zoneWinner);
-
-        calculateAndUpdateResourcePoints(userZone, opponentZone, zoneWinner);
-
-        setTimeout(() => {
-            if (zoneIndex + 1 < opponentZones.length) {
-                flipAIFieldCards(zoneIndex + 1);
-            } else {
-                startResolutionPhase();
+        // Animate confrontation
+        cardAnimations.confrontation(userUnitCard, opponentUnitCard).then(async () => {
+            if (userUnitStatus.includes('applyResourceConfrontation')) {
+                if (userUnitStatus.includes('applyRawForConfrontation')) {
+                    userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.rawResource || 0, 10) : 0;
+                    await cardAnimations.rawValueConfrontation(userUnitCard);
+                } else {
+                    userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.resource || 0, 10) : 0;
+                    await cardAnimations.resourceConfrontation(userUnitCard);
+                }
+            } else if (userUnitStatus.includes('applyRawForConfrontation')) {
+                userUnitCombat = userUnitCard ? parseInt(userUnitCard.dataset.rawCombat || 0, 10) : 0;
+                await cardAnimations.rawValueConfrontation(userUnitCard);
             }
-        }, 1500);
+
+            if (opponentUnitStatus.includes('applyResourceConfrontation')) {
+                if (opponentUnitStatus.includes('applyRawForConfrontation')) {
+                    opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawResource || 0, 10) : 0;
+                    await cardAnimations.rawValueConfrontation(opponentUnitCard);
+                } else {
+                    opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.resource || 0, 10) : 0;
+                    await cardAnimations.resourceConfrontation(opponentUnitCard);
+                }
+            } else if (opponentUnitStatus.includes('applyRawForConfrontation')) {
+                opponentUnitCombat = opponentUnitCard ? parseInt(opponentUnitCard.dataset.rawCombat || 0, 10) : 0;
+                await cardAnimations.rawValueConfrontation(opponentUnitCard);
+            }
+
+            let zoneWinner = null;
+
+            if (userUnitCombat > opponentUnitCombat) {
+                await cardAnimations.victory(userUnitCard, true);
+                await cardAnimations.defeat(opponentUnitCard);
+                greyOutZone(opponentZone);
+                defeatedUnits.ai.push(opponentUnitCard);
+                applyGlowToLand(opponentZone, 'user');
+                zoneWinner = 'user';
+            } else if (userUnitCombat < opponentUnitCombat) {
+                await cardAnimations.victory(opponentUnitCard, false);
+                await cardAnimations.defeat(userUnitCard);
+                greyOutZone(userZone);
+                defeatedUnits.user.push(userUnitCard);
+                applyGlowToLand(userZone, 'ai');
+                zoneWinner = 'ai';
+            } else {
+                greyOutTie(userZone);
+                greyOutTie(opponentZone);
+                zoneWinner = 'tie';
+            }
+
+            ifDefeatsCardEffects(zoneIndex, zoneWinner);
+            ifDefeatedCardEffects(zoneIndex, zoneWinner);
+            reApplyOngoingEffects(zoneWinner);
+            calculateAndUpdateResourcePoints(userZone, opponentZone, zoneWinner);
+
+            setTimeout(() => {
+                if (zoneIndex + 1 < opponentZones.length) {
+                    flipAIFieldCards(zoneIndex + 1);
+                } else {
+                    startResolutionPhase();
+                }
+            }, 1500);
+        });
     }
 
     function reApplyOngoingEffects(zoneWinner){
@@ -2234,7 +2238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function UpdateCombatForZone(zone, opposingCombatValue,opposingResourceValue, opposingUnitTypes, affected, param1, param2, param3, param4,numberOfAllyPowerUps, numberOfOpponentPowerUps, typeOfSourceCard, opposingUnitStatus, userOrOpponent, effectApplied) {
-
+            
         console.log(`Effect applied: ${effectApplied} to ${userOrOpponent === 1 ? 'user' : 'opponent'}\n
                     OpposingCombatValue: ${opposingCombatValue}\nOpposingResourceValue: ${opposingResourceValue}\n
                     Number of opponent power-ups: ${numberOfOpponentPowerUps}\nNumber of ally power-ups: ${numberOfAllyPowerUps}\n
@@ -2254,10 +2258,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log(`Stinger effect activate!`);
                         if (parseInt(card.dataset.rawCombat, 10) > opposingCombatValue){
                             additionalCombat = parseInt(card.dataset.rawCombat, 10);
-                        }
+                }
                         else {
                             additionalCombat = opposingCombatValue;
-                        }
+            }
                         combatValue += additionalCombat;
                     }
                     else { // for centurion
@@ -2309,9 +2313,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         else { //nothing
 
-                        }
-                    }
-                }
+            }
+        }
+    }
                 else if (param1 === 'sameUnitType'){
                     let aSameType = false;
                     opposingUnitTypes.forEach(function (type){
@@ -2433,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         param1 = parseInt(param1, 10);
                         combatValue+=(param1);
                     }
-
+            
                 }
                 else if (param1 === 'Sauriël'){
                     if (opposingCombatValue > card.dataset.rawCombat){
@@ -2451,8 +2455,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Given combat modifier effect activate!`);
                     param1 = parseInt(param1, 10);
                     combatValue += param1;
-                }
-
+            }
+            
                 console.log(`Applying: a modifying combat effect, with \nparam1: ${param1}\nparam2: ${param2} 
                     \nprevious combat: ${card.dataset.combat}\nnew combat: ${combatValue}
                     \naffected: ${affected} \nto card: ${card.dataset.cardName} \nstatus: `, cardStatus);
@@ -2517,7 +2521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     card.dataset.combat = combatValue.toString();
                     updateCardValues(card);
-                }
+                    }
                 else {
                     console.log(`No change!`);
                 }
@@ -2696,10 +2700,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         let additionalCombat = resourceValue - parseInt(card.dataset.resource, 10);
                         card.dataset.combat = (parseInt(card.dataset.combat, 10)+additionalCombat).toString();
                         resourceValue = parseInt(card.dataset.resource, 10);
-                    }
+            }
                     card.dataset.resource = resourceValue.toString();
                     updateCardValues(card);
-                }
+                    }
                 else {
                     console.log(`No change!`);
                 }
@@ -2718,8 +2722,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (param2 !== 'none')
                     newType.push(param2.toString())
                 console.log('type(s) was', card.dataset.type, 'and has become', newType);
-
-                card.dataset.faction = JSON.stringify(newType);
+                
+                    card.dataset.faction = JSON.stringify(newType);
             }
         });
     }
